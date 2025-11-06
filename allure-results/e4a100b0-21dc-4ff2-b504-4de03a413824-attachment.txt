@@ -1,0 +1,21 @@
+设备连接成功!
+设备信息:
+{'currentPackageName': 'com.duole.wuziqihd', 'displayHeight': 2664, 'displayRotation': 0, 'displaySizeDpX': 424, 'displaySizeDpY': 941, 'displayWidth': 1200, 'productName': 'MAG-AN00', 'screenOn': True, 'sdkInt': 35, 'naturalOrientation': True}
+扫描完成，找到16个匹配位置
+最佳匹配: 位置(1085, 370), 置信度=1.000
+  匹配1: 位置(1085, 370), 置信度=1.000
+  匹配2: 位置(1085, 369), 置信度=0.895
+  匹配3: 位置(1085, 371), 置信度=0.894
+  匹配4: 位置(1084, 370), 置信度=0.880
+  匹配5: 位置(1086, 370), 置信度=0.879
+模板匹配成功: gamehome_signin_button_common.png, 位置(1085, 370), 置信度=1.000
+已将标记截图附加到Allure报告: src/resources/screenshots/marked_gamehome_signin_button_common.png_1762399682.png
+扫描完成，找到165个匹配位置
+最佳匹配: 位置(605, 573), 置信度=1.000
+  匹配1: 位置(605, 573), 置信度=1.000
+  匹配2: 位置(605, 572), 置信度=0.971
+  匹配3: 位置(605, 574), 置信度=0.971
+  匹配4: 位置(606, 573), 置信度=0.965
+  匹配5: 位置(604, 573), 置信度=0.965
+模板匹配成功: signin_dialog_title_text_common.png, 位置(605, 573), 置信度=1.000
+已将标记截图附加到Allure报告: src/resources/screenshots/marked_signin_dialog_title_text_common.png_1762399685.png

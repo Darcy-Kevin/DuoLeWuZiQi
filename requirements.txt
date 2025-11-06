@@ -1,0 +1,30 @@
+# UI自动化核心依赖
+uiautomator2==3.4.2
+uiautodev==0.12.0
+
+# 测试框架
+pytest==8.4.2
+pytest-dependency==0.6.0
+
+# Allure报告
+allure-pytest==2.15.0
+allure-python-commons==2.15.0
+
+# 图像处理 (cv2)
+opencv-python==4.12.0.88
+numpy==2.0.2
+pillow==11.3.0
+
+# HTTP请求
+requests==2.32.5
+httpx==0.28.1
+
+# 系统工具
+setuptools>=58.0.0
+adbutils==2.9.4
+
+# 其他依赖
+attrs==25.4.0
+packaging==25.0
+typing_extensions==4.15.0
+
