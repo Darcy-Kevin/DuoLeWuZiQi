@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown 流程图预览</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .mermaid {
+            text-align: center;
+            margin: 20px 0;
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>app_email_test.py 测试流程图</h1>
+        
+        <h2>完整测试流程</h2>
+        <div class="mermaid">
+flowchart LR
+    Start([测试开始]) --> Test1[测试1: 启动验证]
+    Test1 --> Test2[测试2: 邮件红点逻辑]
+    
+    Test2 --> FindReddot[查找红点<br/>阈值1.0]
+    FindReddot --> FoundReddot{找到?}
+    
+    FoundReddot -->|是| ClickEmail[点击邮件按钮]
+    FoundReddot -->|否| SendRequest[发送邮件API]
+    SendRequest --> Wait1[等待5秒]
+    Wait1 --> FindReddot2[再次查找红点]
+    FindReddot2 --> ClickEmail
+    
+    ClickEmail --> VerifyEmailPage[验证邮件页面]
+    VerifyEmailPage --> ClickView[点击查看按钮]
+    ClickView --> VerifyDetail[验证邮件详情页]
+    VerifyDetail --> ClickClose[点击关闭按钮]
+    ClickClose --> ClickBack[点击返回按钮]
+    ClickBack --> VerifyNoReddot[验证红点消失]
+    VerifyNoReddot --> Success([测试成功✅])
+        </div>
+
+        <h2>邮件红点测试详细流程</h2>
+        <div class="mermaid">
+flowchart LR
+    A[开始测试] --> B[创建图像匹配器]
+    B --> C[查找邮件红点<br/>阈值=1.0]
+    C --> D{找到?}
+    
+    D -->|是| E1[记录结果]
+    E1 --> E2[创建截图]
+    E2 --> F[点击邮件按钮]
+    
+    D -->|否| G1[创建标记截图]
+    G1 --> G2[发送邮件API]
+    G2 --> H[等待5秒]
+    H --> I[查找红点<br/>阈值0.6]
+    I --> J{找到?}
+    J -->|否| K[阈值0.45]
+    K --> L{找到?}
+    L -->|是| F
+    L -->|否| FAIL1[测试失败❌]
+    
+    F --> M[验证邮件页面]
+    M --> N[点击查看按钮]
+    N --> O[验证详情页]
+    O --> P[点击关闭按钮]
+    P --> Q[点击返回按钮]
+    Q --> R[验证红点消失]
+    R --> S{找到无红点按钮?}
+    S -->|是| SUCCESS[测试成功✅]
+    S -->|否| FAIL2[测试失败❌]
+        </div>
+
+        <h2>返回大厅验证流程</h2>
+        <div class="mermaid">
+flowchart LR
+    Start([邮件详情页]) --> FindClose[查找关闭按钮<br/>阈值0.6]
+    FindClose --> FoundClose{找到?}
+    FoundClose -->|否| TryClose[阈值0.45]
+    TryClose --> FoundClose2{找到?}
+    FoundClose2 -->|否| FAIL1[退出❌]
+    FoundClose -->|是| ClickClose[点击关闭按钮]
+    FoundClose2 -->|是| ClickClose
+    
+    ClickClose --> Wait1[等待2秒]
+    Wait1 --> FindBack[查找返回按钮<br/>阈值0.6]
+    FindBack --> FoundBack{找到?}
+    FoundBack -->|否| TryBack[阈值0.45]
+    TryBack --> FoundBack2{找到?}
+    FoundBack2 -->|否| FAIL2[退出❌]
+    FoundBack -->|是| ClickBack[点击返回按钮]
+    FoundBack2 -->|是| ClickBack
+    
+    ClickBack --> Wait2[等待2秒]
+    Wait2 --> FindNoReddot[查找无红点按钮<br/>阈值0.6]
+    FindNoReddot --> FoundNoReddot{找到?}
+    FoundNoReddot -->|否| TryNoReddot[阈值0.45]
+    TryNoReddot --> FoundNoReddot2{找到?}
+    FoundNoReddot -->|是| SUCCESS[测试成功✅<br/>红点已消失]
+    FoundNoReddot2 -->|是| SUCCESS
+    FoundNoReddot2 -->|否| FAIL3[测试失败❌<br/>红点仍存在]
+        </div>
+
+        <h2>异常处理流程</h2>
+        <div class="mermaid">
+flowchart LR
+    Try[执行操作] --> Success{成功?}
+    Success -->|是| Continue[继续执行]
+    Success -->|否| Catch[捕获异常]
+    
+    Catch --> Type{异常类型}
+    Type -->|Timeout| HandleTimeout[处理超时异常]
+    Type -->|RequestException| HandleRequest[处理请求异常]
+    Type -->|其他异常| HandleOther[处理未知异常]
+    
+    HandleTimeout --> Screenshot[附加错误截图]
+    HandleRequest --> Screenshot
+    HandleOther --> Screenshot
+    
+    Screenshot --> Attach[附加错误信息]
+    Attach --> Exit[退出测试]
+    
+    Continue --> End([继续或结束])
+    Exit --> End
+        </div>
+
+        <h2>测试步骤说明</h2>
+        <h3>1. 应用启动验证</h3>
+        <ul>
+            <li>启动应用并等待20秒</li>
+            <li>查找多乐币图标验证进入游戏大厅</li>
+            <li>阈值策略：0.6 → 0.45</li>
+        </ul>
+
+        <h3>2. 邮件红点展示逻辑</h3>
+        <ul>
+            <li>首次查找邮件红点（阈值1.0）</li>
+            <li>如果未找到，发送邮件请求API</li>
+            <li>等待5秒后再次查找红点（阈值0.6 → 0.45）</li>
+        </ul>
+
+        <h3>3. 点击邮件按钮</h3>
+        <ul>
+            <li>查找带红点的邮件按钮</li>
+            <li>点击进入邮件页面</li>
+            <li>验证是否进入邮件页面（查找未读邮件按钮）</li>
+        </ul>
+
+        <h3>4. 阅读邮件</h3>
+        <ul>
+            <li>点击查看按钮</li>
+            <li>验证是否进入邮件详情页面（查找邮件标题）</li>
+        </ul>
+
+        <h3>5. 返回大厅验证红点消失</h3>
+        <ul>
+            <li>点击邮件详情页关闭按钮</li>
+            <li>点击返回按钮</li>
+            <li>验证邮件按钮红点是否消失（查找无红点按钮）</li>
+            <li>找到了 → 测试通过，红点已消失</li>
+            <li>未找到 → 测试失败，红点仍然存在</li>
+        </ul>
+
+        <h2>使用说明</h2>
+        <p>在浏览器中打开此 HTML 文件即可预览流程图。</p>
+        <p>如果流程图没有正常显示，请确保您的网络连接正常（需要加载 Mermaid.js 库）。</p>
+    </div>
+</body>
+</html>
