@@ -55,7 +55,7 @@ venv/bin/python3 -m uiautomator2 init >/dev/null 2>&1 || true
 
 # 运行测试脚本
 echo "运行测试..."
-venv/bin/python3 -m pytest src/tests/app_launch/app_launch_test.py --alluredir=allure-results
+venv/bin/python3 -m pytest src/tests/app_email/app_email_test.py --alluredir=allure-results
 
 # 显示测试结果信息
 echo "测试完成，结果保存在allure-results目录"
