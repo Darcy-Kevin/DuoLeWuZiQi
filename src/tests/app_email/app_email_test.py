@@ -11,6 +11,7 @@ import pytest
 import allure
 import os
 
+
 from src.config.template_paths import TemplatePaths
 from src.utils.image_utils import create_image_matcher
 from src.utils.screenshot_utils import attach_screenshot_to_allure
