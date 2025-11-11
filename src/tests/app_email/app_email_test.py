@@ -2,7 +2,6 @@
 多乐五子棋应用邮件相关功能测试
 此脚本用于自动连接设备、启动多乐五子棋应用、等待特定界面出现并执行邮件相关功能操作。
 """
-from ftplib import all_errors
 import uiautomator2 as u2
 import requests
 import json
@@ -26,11 +25,11 @@ class TestDuoleWuZiQiAppEmail:
         d = u2.connect()
         try:
             d.app_stop("com.duole.wuziqihd")
-            time.sleep(5)
+            time.sleep(1)
         except Exception:
             pass
         d.app_start("com.duole.wuziqihd")
-        time.sleep(14)
+        time.sleep(10)
 
         try:
             image_matcher = create_image_matcher(d)
@@ -74,47 +73,46 @@ class TestDuoleWuZiQiAppEmail:
                                         
                     try:
                         url = "http://120.53.247.249:8012/mails/send"
-                        payload = {
-                            "passwd": "sscvrbbt532dfdgnmjyukukueghkkuhegnklethjk7gcs",
-                            "mailInfo": {
-                                "userlist": [461684],
-                                "addresser": "多乐五子棋团队",
-                                "title": "测试红点退场逻辑",
-                                "content": "测试红点退场逻辑",
-                                "days": 1,
-                                "type": 0,
-                                "props": [
-                                    {
-                                        "proptype": 0,
-                                        "propid": 0,
-                                        "delta": 400000
-                                    },
-                                    {
-                                        "proptype": 0,
-                                        "propid": 2,
-                                        "delta": 4
-                                    }
-                                ],
-                                "from": 3,
-                                "extraInfo": {
-                                    "type": 1,
-                                    "extra": ""
-                                }
-                            }   
+                        mail_info = {
+                            "userlist": [461684],
+                            "addresser": "多乐五子棋团队",
+                            "title": "测试红点退场逻辑",
+                            "content": "测试红点退场逻辑",
+                            "days": 1,
+                            "type": 0,
+                            "props": [
+                                {"proptype": 0, "propid": 0, "delta": 400000},
+                                {"proptype": 0, "propid": 2, "delta": 4}
+                            ],
+                            "from": 3,
+                            "extraInfo": {"type": 1, "extra": ""}
                         }
-                        payload["mailInfo"] = json.dumps(payload["mailInfo"])
-                        response = requests.post(url, data=payload)
-                        
-                        # 检查响应状态
-                        if response.status_code != 200:
-                            allure.attach(f"HTTP状态码: {response.status_code}\n响应内容: {response.text}", "邮件请求失败", allure.attachment_type.TEXT)
-                            pytest.exit(f"邮件请求失败: HTTP {response.status_code}, {response.text}", returncode=1)
-                        
-                        # 附加响应内容到Allure报告
-                        allure.attach(response.text, "邮件请求响应", allure.attachment_type.TEXT)
-                        print(f"邮件请求成功: {response.text}")
 
-                        # 脚本执行成功后，等待一段时间让应用更新界面
+                        for send_index in range(3):
+                            payload = {
+                                "passwd": "sscvrbbt532dfdgnmjyukukueghkkuhegnklethjk7gcs",
+                                "mailInfo": json.dumps(mail_info)
+                            }
+                            response = requests.post(url, data=payload)
+                            if response.status_code != 200:
+                                allure.attach(
+                                    f"第 {send_index + 1} 次发送失败\nHTTP状态码: {response.status_code}\n响应内容: {response.text}",
+                                    "邮件请求失败",
+                                    allure.attachment_type.TEXT
+                                )
+                                pytest.exit(
+                                    f"邮件请求失败(第 {send_index + 1} 次): HTTP {response.status_code}, {response.text}",
+                                    returncode=1
+                                )
+
+                            allure.attach(
+                                response.text,
+                                f"第 {send_index + 1} 次邮件请求响应",
+                                allure.attachment_type.TEXT
+                            )
+                            print(f"第 {send_index + 1} 次邮件请求成功: {response.text}")
+                            time.sleep(2)
+
                         time.sleep(5)
                         
                         # 再次尝试查找红点
@@ -654,6 +652,7 @@ class TestDuoleWuZiQiAppEmail:
 
     @allure.feature("邮件详情页")
     @allure.story("邮件删除")
+    @allure.label("order", "3")
     @allure.title("测试单个邮件删除")
     def test_email_single_delete_logic(self, driver):
         """验证单个邮件删除逻辑"""
@@ -734,10 +733,10 @@ class TestDuoleWuZiQiAppEmail:
                 attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
                 pytest.exit(f"测试进入已读邮件列表失败: {e}", returncode=1)
 
-        with allure.step("点击已查看邮件，进入已查看邮件详情页"):
+        with allure.step("点击红点退场邮件，进入邮件详情页"):
             try:
                 image_matcher = create_image_matcher(driver)
-                template = 'src/resources/templates/common/email/email_button/email_viewed_button_common.png'
+                template = 'src/resources/templates/common/email/email_text/email_title_reddot_exit_text_common.png'
                 result = image_matcher.find_template_in_screenshot(template,threshold=0.6)
                 found_threshold = 0.6
                 if not result:
@@ -745,53 +744,451 @@ class TestDuoleWuZiQiAppEmail:
                     found_threshold = 0.45
                 if not result:
                     image_matcher.create_marked_screenshot_for_single_template(template,threshold=0.45)
-                    attach_screenshot_to_allure(driver,'email_viewed_button_not_found','没有找到已查看按钮')
-                    pytest.exit("没有找到已查看按钮", returncode=1)
+                    attach_screenshot_to_allure(driver,'email_title_reddot_exit_text_not_found','没有找到红点退场邮件')
+                    pytest.exit("没有找到红点退场邮件", returncode=1)
                 else:
                     x, y, confidence = result
                     x, y, confidence = int(x), int(y), float(confidence)
-                    allure.attach(f"已查看按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}", "已查看按钮查找结果", allure.attachment_type.TEXT)
+                    allure.attach(f"红点退场邮件位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}", "红点退场邮件查找结果", allure.attachment_type.TEXT)
                     image_matcher.create_marked_screenshot_for_single_template(template,threshold=found_threshold)
-                    attach_screenshot_to_allure(driver,'email_viewed_button_found',"找到了已查看按钮")
+                    attach_screenshot_to_allure(driver,'email_title_reddot_exit_text_found',"找到了红点退场邮件")
                     driver.click(x, y)
                     time.sleep(2)
-                    with allure.step("验证是否进入了已查看邮件详情页"):
+                    with allure.step("验证是否进入了邮件详情页"):
                         detail_template = 'src/resources/templates/common/email_detail/email_detail_text/email_detail_title_text_common.png'
                         detail_result = image_matcher.find_template_in_screenshot(detail_template,threshold=0.6)
                         if not detail_result:
                             detail_result = image_matcher.find_template_in_screenshot(detail_template,threshold=0.45)
                             image_matcher.create_marked_screenshot_for_single_template(detail_template,threshold=0.45)
-                            attach_screenshot_to_allure(driver,'email_detail_title_not_found','没有找到邮件标题')
+                            attach_screenshot_to_allure(driver,'email_detail_title_text_not_found','没有找到邮件标题')
                             pytest.exit("没有找到邮件标题", returncode=1)
                         else:
                             detail_x, detail_y, detail_confidence = detail_result
                             detail_x, detail_y, detail_confidence = int(detail_x), int(detail_y), float(detail_confidence)
-                            allure.attach(f"邮件标题位置: ({detail_x}, {detail_y}), 置信度: {detail_confidence:.3f}", "邮件标题查找结果", allure.attachment_type.TEXT)
+                            allure.attach(f"邮件标题文本位置: ({detail_x}, {detail_y}), 置信度: {detail_confidence:.3f}", "邮件标题文本查找结果", allure.attachment_type.TEXT)
                             image_matcher.create_marked_screenshot_for_single_template(detail_template,threshold=0.6)
-                            attach_screenshot_to_allure(driver,'email_detail_title_found',"找到了邮件标题")
+                            attach_screenshot_to_allure(driver,'email_detail_title_text_found',"找到了邮件标题")
             
             except Exception as e:
                 attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
                 pytest.exit(f"测试进入已查看邮件详情页失败: {e}", returncode=1)
 
-        # with allure.step("点击删除按钮，删除邮件"):
-        #     try:
-        #         image_matcher = create_image_matcher(driver)
-        #         template = 'src/resources/templates/common/email_detail/email_detail_button/email_detail_delete_mail_button_common.png'
-        #         result = image_matcher.find_template_in_screenshot(template,threshold=0.6)
-        #         found_threshold = 0.6
-        #         if not result:
-        #             result = image_matcher.find_template_in_screenshot(template,threshold=0.45)
-        #             found_threshold = 0.45
-        #         if not result:
-        #             image_matcher.create_marked_screenshot_for_single_template(template,threshold=0.45)
-        #             attach_screenshot_to_allure(driver,'delete_mail_button_not_found','没有找到删除按钮')
-        #             pytest.exit("没有找到删除按钮", returncode=1)
-        #         else:
-        #             x, y, confidence = result
-        #             x, y, confidence = int(x), int(y), float(confidence)
-        #             allure.attach(f"删除按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}", "删除按钮查找结果", allure.attachment_type.TEXT)
-        #             image_matcher.create_marked_screenshot_for_single_template(template,threshold=found_threshold)
-        #             attach_screenshot_to_allure(driver,'delete_mail_button_found',"找到了删除按钮")
-        #             driver.click(x, y)
-        #             time.sleep(2)
+        with allure.step("点击删除按钮，展示二次确认弹窗"):
+            try:
+                image_matcher = create_image_matcher(driver)
+                template = 'src/resources/templates/common/email_detail/email_detail_button/email_detail_delete_mail_button_common.png'
+                result = image_matcher.find_template_in_screenshot(template,threshold=0.6)
+                found_threshold = 0.6
+                if not result:
+                    result = image_matcher.find_template_in_screenshot(template,threshold=0.45)
+                    found_threshold = 0.45
+                if not result:
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=0.45)
+                    attach_screenshot_to_allure(driver,'delete_mail_button_not_found','没有找到删除按钮')
+                    pytest.exit("没有找到删除按钮", returncode=1)
+                else:
+                    x, y, confidence = result
+                    x, y, confidence = int(x), int(y), float(confidence)
+                    allure.attach(f"删除按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}", "删除按钮查找结果", allure.attachment_type.TEXT)
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=found_threshold)
+                    attach_screenshot_to_allure(driver,'delete_mail_button_found',"找到了删除按钮")
+                    driver.click(x, y)
+                    time.sleep(2)
+
+                    with allure.step("验证是否展示二次确认弹窗"):
+                        tip_template = 'src/resources/templates/common/email_detail/email_detail_text/email_detail_tip_text_common.png'
+                        tip_result = image_matcher.find_template_in_screenshot(tip_template,threshold=0.6)
+                        if not tip_result:
+                            tip_result = image_matcher.find_template_in_screenshot(tip_template,threshold=0.45)
+                            image_matcher.create_marked_screenshot_for_single_template(tip_template,threshold=0.45)
+                            attach_screenshot_to_allure(driver,'email_detail_tip_not_found','没有找到二次确认弹窗')
+                            pytest.exit("没有找到二次确认弹窗", returncode=1)
+                        else:
+                            tip_x, tip_y, tip_confidence = tip_result
+                            tip_x, tip_y, tip_confidence = int(tip_x), int(tip_y), float(tip_confidence)
+                            allure.attach(f"二次确认弹窗位置: ({tip_x}, {tip_y}), 置信度: {tip_confidence:.3f}", "二次确认弹窗查找结果", allure.attachment_type.TEXT)
+                            attach_screenshot_to_allure(driver,'email_detail_tip_found',"找到了二次确认弹窗")
+            
+            except Exception as e:
+                attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
+                pytest.exit(f"测试点击删除按钮失败: {e}", returncode=1)
+
+        with allure.step("点击二次确认弹窗确定按钮，删除邮件，验证是否删除成功"):
+            try:
+                image_matcher = create_image_matcher(driver)
+                template = 'src/resources/templates/common/email_detail/email_detail_button/email_detail_confirm_button_common.png'
+                result = image_matcher.find_template_in_screenshot(template,threshold=0.6)
+                found_threshold = 0.6
+                if not result:
+                    result = image_matcher.find_template_in_screenshot(template,threshold=0.45)
+                    found_threshold = 0.45
+                if not result:
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=0.45)
+                    attach_screenshot_to_allure(driver,'email_detail_confirm_button_not_found','没有找到确定按钮')
+                    pytest.exit("没有找到确定按钮", returncode=1)
+                else:
+                    x, y, confidence = result
+                    x, y, confidence = int(x), int(y), float(confidence)
+                    allure.attach(f"确定按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}", "确定按钮查找结果", allure.attachment_type.TEXT)
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=found_threshold)
+                    attach_screenshot_to_allure(driver,'email_detail_confirm_button_found',"找到了确定按钮")
+                    driver.click(x, y)
+                    time.sleep(2)
+                    with allure.step("验证是否删除了邮件，查找已经删除的红点退场的邮件"):
+                        delete_template = 'src/resources/templates/common/email/email_text/email_title_reddot_exit_text_common.png'
+                        delete_result = image_matcher.find_template_in_screenshot(delete_template, threshold=0.6)
+                        if delete_result:
+                            delete_x, delete_y, delete_confidence = delete_result
+                            delete_x, delete_y, delete_confidence = int(delete_x), int(delete_y), float(delete_confidence)
+                            allure.attach(
+                                f"红点退场邮件仍然存在，位置: ({delete_x}, {delete_y}), 置信度: {delete_confidence:.3f}",
+                                "红点退场邮件查找结果",
+                                allure.attachment_type.TEXT
+                            )
+                            image_matcher.create_marked_screenshot_for_single_template(delete_template, threshold=0.6)
+                            attach_screenshot_to_allure(driver, 'email_title_reddot_exit_found', "仍然找到了红点退场邮件")
+                            pytest.exit("删除邮件失败，红点退场邮件仍然存在", returncode=1)
+                        else:
+                            delete_result = image_matcher.find_template_in_screenshot(delete_template, threshold=0.45)
+                            if delete_result:
+                                delete_x, delete_y, delete_confidence = delete_result
+                                delete_x, delete_y, delete_confidence = int(delete_x), int(delete_y), float(delete_confidence)
+                                allure.attach(
+                                    f"红点退场邮件仍然存在(低阈值)，位置: ({delete_x}, {delete_y}), 置信度: {delete_confidence:.3f}",
+                                    "红点退场邮件查找结果(低阈值)",
+                                    allure.attachment_type.TEXT
+                                )
+                                image_matcher.create_marked_screenshot_for_single_template(delete_template, threshold=0.45)
+                                attach_screenshot_to_allure(driver, 'email_title_reddot_exit_found_low_threshold', "低阈值仍然找到了红点退场邮件")
+                                pytest.exit("删除邮件失败，红点退场邮件仍然存在(低阈值)", returncode=1)
+                            else:
+                                allure.attach("未找到红点退场邮件", "红点退场邮件查找结果", allure.attachment_type.TEXT)
+                                attach_screenshot_to_allure(driver, 'email_title_reddot_exit_not_found', "未找到红点退场邮件，删除成功")
+            except Exception as e:
+                attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
+                pytest.exit(f"测试确认删除邮件失败: {e}", returncode=1)
+
+    
+    @allure.feature("邮件页")
+    @allure.story("未读邮件列表-一键查看")
+    @allure.label("order", "4")
+    @allure.title("测试未读邮件列表一键查看逻辑")
+    def test_email_unread_list_one_key_view_logic(self, driver):
+        """验证未读邮件列表一键查看逻辑"""
+        with allure.step("点击邮件进入邮件页"):
+            image_matcher = create_image_matcher(driver)
+            try:
+                template = 'src/resources/templates/common/gamehome/gamehome_button/gamehome_email_button_not_reddot_common.png'
+                first_found_threshold = 0.6
+                result = image_matcher.find_template_in_screenshot(template,threshold=first_found_threshold)
+                if not result:
+                    second_found_threshold = 0.45
+                    result = image_matcher.find_template_in_screenshot(template,threshold=second_found_threshold)
+                if not result:
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=second_found_threshold)
+                    attach_screenshot_to_allure(driver,'email_not_reddot_button_not_found','没有找到邮件按钮')
+                else:
+                    x, y, confidence = result
+                    x, y, confidence = int(x), int(y), float(confidence)
+                    allure.attach(f"邮件按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {first_found_threshold}", "邮件钮查找结果", allure.attachment_type.TEXT)
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=first_found_threshold)
+                    attach_screenshot_to_allure(driver,'email_button_found',"找到了邮件按钮")
+                    driver.click(x, y)
+                    time.sleep(2)
+                    with allure.step("验证是否进入了未读邮件列表"):
+                        read_list_template = 'src/resources/templates/common/email/email_button/email_select_unread_button_common.png'
+                        read_list_result = image_matcher.find_template_in_screenshot(read_list_template,threshold=0.6)
+                        if not read_list_result:
+                            read_list_result = image_matcher.find_template_in_screenshot(read_list_template,threshold=0.45)
+                            image_matcher.create_marked_screenshot_for_single_template(read_list_template,threshold=0.45)
+                            attach_screenshot_to_allure(driver,'email_select_unread_list_not_found','没有找到未读邮件列表')
+                            pytest.exit("没有找到未读邮件列表", returncode=1)
+                        else:
+                            read_list_x, read_list_y, read_list_confidence = read_list_result
+                            read_list_x, read_list_y, read_list_confidence = int(read_list_x), int(read_list_y), float(read_list_confidence)
+                            allure.attach(f"未读邮件列表位置: ({read_list_x}, {read_list_y}), 置信度: {read_list_confidence:.3f}", "未读邮件列表查找结果", allure.attachment_type.TEXT)
+                            attach_screenshot_to_allure(driver,'email_select_unread_list_found',"找到了未读邮件列表")
+            
+            except Exception as e:
+                attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
+                pytest.exit(f"测试进入未读邮件列表失败: {e}", returncode=1)
+
+        with allure.step("进入邮件页，发请求发送邮件x个，x=3（可配置）"):
+            try:
+                url = "http://120.53.247.249:8012/mails/send"
+                mail_info = {
+                    "userlist": [461684],
+                    "addresser": "多乐五子棋团队",
+                    "title": "测试红点退场逻辑",
+                    "content": "测试红点退场逻辑",
+                    "days": 1,
+                    "type": 0,
+                    "props": [
+                        {"proptype": 0, "propid": 0, "delta": 400000},
+                        {"proptype": 0, "propid": 2, "delta": 4}
+                    ],
+                    "from": 3,
+                    "extraInfo": {"type": 1, "extra": ""}
+                }
+
+                for send_index in range(3):
+                    payload = {
+                        "passwd": "sscvrbbt532dfdgnmjyukukueghkkuhegnklethjk7gcs",
+                        "mailInfo": json.dumps(mail_info)
+                    }
+                    response = requests.post(url, data=payload)
+                    if response.status_code != 200:
+                        allure.attach(
+                            f"第 {send_index + 1} 次发送失败\nHTTP状态码: {response.status_code}\n响应内容: {response.text}",
+                            "邮件请求失败",
+                            allure.attachment_type.TEXT
+                        )
+                        pytest.exit(
+                            f"邮件请求失败(第 {send_index + 1} 次): HTTP {response.status_code}, {response.text}",
+                            returncode=1
+                        )
+
+                    allure.attach(
+                        response.text,
+                        f"第 {send_index + 1} 次邮件请求响应",
+                        allure.attachment_type.TEXT
+                    )
+                    print(f"第 {send_index + 1} 次邮件请求成功: {response.text}")
+                    time.sleep(2)
+
+                time.sleep(5)
+            except Exception as e:
+                attach_screenshot_to_allure(driver, "email_one_key_view_request_error", f"[{get_current_time_str()}] 发送邮件请求失败: {e}")
+                pytest.exit(f"测试未读列表一键查看前置发送邮件失败: {e}", returncode=1)
+
+        with allure.step("点击未读邮件列表一键查看按钮，进入邮件详情页"):
+            try:
+                image_matcher = create_image_matcher(driver)
+                template = 'src/resources/templates/common/email/email_button/email_one_key_view_button_common.png'
+                result = image_matcher.find_template_in_screenshot(template,threshold=0.6)
+                found_threshold = 0.6
+                if not result:
+                    result = image_matcher.find_template_in_screenshot(template,threshold=0.45)
+                    found_threshold = 0.45
+                if not result:
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=0.45)
+                    attach_screenshot_to_allure(driver,'email_one_key_view_button_not_found','没有找到一键查看按钮')
+                    pytest.exit("没有找到一键查看按钮", returncode=1)
+                else:
+                    x, y, confidence = result
+                    x, y, confidence = int(x), int(y), float(confidence)
+                    allure.attach(f"一键查看按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}", "一键查看按钮查找结果", allure.attachment_type.TEXT)
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=found_threshold)
+                    attach_screenshot_to_allure(driver,'email_one_key_view_button_found',"找到了一键查看按钮")
+                    driver.click(x, y)
+                    time.sleep(2)
+                    with allure.step("验证是否弹出奖励或显示空列表"):
+                        reward_template = 'src/resources/templates/common/email_detail/email_detail_text/email_get_text_common.png'
+                        null_template = 'src/resources/templates/common/email/email_icon/email_null_icon_common.png'
+
+                        reward_result = image_matcher.find_template_in_screenshot(reward_template,threshold=0.6)
+                        if reward_result:
+                            reward_x, reward_y, reward_confidence = reward_result
+                            reward_x, reward_y, reward_confidence = int(reward_x), int(reward_y), float(reward_confidence)
+                            allure.attach(
+                                f"奖励弹窗位置: ({reward_x}, {reward_y}), 置信度: {reward_confidence:.3f}",
+                                "奖励弹窗查找结果",
+                                allure.attachment_type.TEXT
+                            )
+                            attach_screenshot_to_allure(driver,'email_get_text_found',"找到了奖励弹窗")
+                        else:
+                            reward_result = image_matcher.find_template_in_screenshot(reward_template,threshold=0.45)
+                            if reward_result:
+                                reward_x, reward_y, reward_confidence = reward_result
+                                reward_x, reward_y, reward_confidence = int(reward_x), int(reward_y), float(reward_confidence)
+                                allure.attach(
+                                    f"奖励弹窗位置(低阈值): ({reward_x}, {reward_y}), 置信度: {reward_confidence:.3f}",
+                                    "奖励弹窗查找结果(低阈值)",
+                                    allure.attachment_type.TEXT
+                                )
+                                image_matcher.create_marked_screenshot_for_single_template(reward_template,threshold=0.45)
+                                attach_screenshot_to_allure(driver,'email_get_text_found_low_threshold',"低阈值找到了奖励弹窗")
+                            else:
+                                null_result = image_matcher.find_template_in_screenshot(null_template,threshold=0.6)
+                                if not null_result:
+                                    null_result = image_matcher.find_template_in_screenshot(null_template,threshold=0.45)
+                                if null_result:
+                                    null_x, null_y, null_confidence = null_result
+                                    null_x, null_y, null_confidence = int(null_x), int(null_y), float(null_confidence)
+                                    allure.attach(
+                                        f"空列表图标位置: ({null_x}, {null_y}), 置信度: {null_confidence:.3f}",
+                                        "空列表图标查找结果",
+                                        allure.attachment_type.TEXT
+                                    )
+                                    image_matcher.create_marked_screenshot_for_single_template(null_template,threshold=0.6)
+                                    attach_screenshot_to_allure(driver,'email_null_icon_found',"找到了空列表图标")
+                                else:
+                                    image_matcher.create_marked_screenshot_for_single_template(reward_template,threshold=0.45)
+                                    image_matcher.create_marked_screenshot_for_single_template(null_template,threshold=0.45)
+                                    attach_screenshot_to_allure(driver,'email_get_text_and_null_icon_not_found','未找到奖励弹窗或空列表图标')
+                                    pytest.exit("未找到奖励弹窗或空列表图标", returncode=1)
+            
+            except Exception as e:
+                attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
+                pytest.exit(f"测试进入未读邮件列表一键查看失败: {e}", returncode=1)
+
+    @allure.feature("邮件页")
+    @allure.story("已读邮件列表-一键删除")
+    @allure.label("order", "5")
+    @allure.title("测试已读邮件列表一键删除逻辑")
+    def test_email_read_list_one_key_delete_logic(self, driver):
+        """验证已读邮件列表一键删除逻辑"""
+        with allure.step("点击邮件进入邮件页"):
+            image_matcher = create_image_matcher(driver)
+            try:
+                template = 'src/resources/templates/common/gamehome/gamehome_button/gamehome_email_button_not_reddot_common.png'
+                first_found_threshold = 0.6
+                result = image_matcher.find_template_in_screenshot(template,threshold=first_found_threshold)
+                if not result:
+                    second_found_threshold = 0.45
+                    result = image_matcher.find_template_in_screenshot(template,threshold=second_found_threshold)
+                if not result:
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=second_found_threshold)
+                    attach_screenshot_to_allure(driver,'email_not_reddot_button_not_found','没有找到邮件按钮')
+                else:
+                    x, y, confidence = result
+                    x, y, confidence = int(x), int(y), float(confidence)
+                    allure.attach(f"邮件按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {first_found_threshold}", "邮件钮查找结果", allure.attachment_type.TEXT)
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=first_found_threshold)
+                    attach_screenshot_to_allure(driver,'email_button_found',"找到了邮件按钮")
+                    driver.click(x, y)
+                    time.sleep(2)
+                    with allure.step("验证是否进入了未读邮件列表"):
+                        read_list_template = 'src/resources/templates/common/email/email_button/email_select_unread_button_common.png'
+                        read_list_result = image_matcher.find_template_in_screenshot(read_list_template,threshold=0.6)
+                        if not read_list_result:
+                            read_list_result = image_matcher.find_template_in_screenshot(read_list_template,threshold=0.45)
+                            image_matcher.create_marked_screenshot_for_single_template(read_list_template,threshold=0.45)
+                            attach_screenshot_to_allure(driver,'email_select_unread_list_not_found','没有找到未读邮件列表')
+                            pytest.exit("没有找到未读邮件列表", returncode=1)
+                        else:
+                            read_list_x, read_list_y, read_list_confidence = read_list_result
+                            read_list_x, read_list_y, read_list_confidence = int(read_list_x), int(read_list_y), float(read_list_confidence)
+                            allure.attach(f"未读邮件列表位置: ({read_list_x}, {read_list_y}), 置信度: {read_list_confidence:.3f}", "未读邮件列表查找结果", allure.attachment_type.TEXT)
+                            attach_screenshot_to_allure(driver,'email_select_unread_list_found',"找到了未读邮件列表")
+            
+            except Exception as e:
+                attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
+                pytest.exit(f"测试进入未读邮件列表失败: {e}", returncode=1)
+
+        with allure.step("点击已读邮件进入已读邮件列表"):
+            try:
+                image_matcher = create_image_matcher(driver)
+                template = 'src/resources/templates/common/email/email_button/email_unselect_read_button_common.png'
+                result = image_matcher.find_template_in_screenshot(template,threshold=0.6)
+                found_threshold = 0.6
+                if not result:
+                    result = image_matcher.find_template_in_screenshot(template,threshold=0.45)
+                    found_threshold = 0.45
+                if not result:
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=0.45)
+                    attach_screenshot_to_allure(driver,'email_select_read_list_not_found','没有找到已读邮件列表')
+                    pytest.exit("没有找到已读邮件列表", returncode=1)
+                else:
+                    x, y, confidence = result
+                    x, y, confidence = int(x), int(y), float(confidence)
+                    allure.attach(f"已读邮件列表位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}", "已读邮件列表查找结果", allure.attachment_type.TEXT)
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=found_threshold)
+                    attach_screenshot_to_allure(driver,'email_select_read_list_found',"找到了已读邮件列表")
+                    driver.click(x, y)
+                    time.sleep(2)
+                    with allure.step("验证是否进入了已读邮件列表"):
+                        read_list_template = 'src/resources/templates/common/email/email_button/email_select_read_button_common.png'
+                        read_list_result = image_matcher.find_template_in_screenshot(read_list_template,threshold=0.6)
+                        if not read_list_result:
+                            read_list_result = image_matcher.find_template_in_screenshot(read_list_template,threshold=0.45)
+                            image_matcher.create_marked_screenshot_for_single_template(read_list_template,threshold=0.45)
+                            attach_screenshot_to_allure(driver,'email_select_read_list_not_found','没有找到已读邮件列表')
+                            pytest.exit("没有找到已读邮件列表", returncode=1)
+                        else:
+                            read_list_x, read_list_y, read_list_confidence = read_list_result
+                            read_list_x, read_list_y, read_list_confidence = int(read_list_x), int(read_list_y), float(read_list_confidence)
+                            allure.attach(f"已读邮件列表位置: ({read_list_x}, {read_list_y}), 置信度: {read_list_confidence:.3f}", "已读邮件列表查找结果", allure.attachment_type.TEXT)
+                            attach_screenshot_to_allure(driver,'email_select_read_list_found',"找到了已读邮件列表")
+            
+            except Exception as e:
+                attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
+                pytest.exit(f"测试进入已读邮件列表失败: {e}", returncode=1)
+
+        with allure.step("点击已读邮件列表一键删除按钮，展示二次确认弹窗"):
+            image_matcher = create_image_matcher(driver)
+            try:
+                template = 'src/resources/templates/common/email/email_button/email_one_key_delete_button_common.png'
+                result = image_matcher.find_template_in_screenshot(template,threshold=0.6)
+                found_threshold = 0.6
+                if not result:
+                    result = image_matcher.find_template_in_screenshot(template,threshold=0.45)
+                    found_threshold = 0.45
+                if not result:
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=0.45)
+                    attach_screenshot_to_allure(driver,'email_one_key_delete_button_not_found','没有找到一键删除按钮')
+                    pytest.exit("没有找到一键删除按钮", returncode=1)
+                else:
+                    x, y, confidence = result
+                    x, y, confidence = int(x), int(y), float(confidence)
+                    allure.attach(f"一键删除按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}", "一键删除按钮查找结果", allure.attachment_type.TEXT)
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=found_threshold)
+                    attach_screenshot_to_allure(driver,'email_one_key_delete_button_found',"找到了一键删除按钮")
+                    driver.click(x, y)
+                    time.sleep(2)
+                    with allure.step("验证是否展示二次确认弹窗"):
+                        tip_template = 'src/resources/templates/common/email_detail/email_detail_text/email_detail_tip_text_common.png'
+                        tip_result = image_matcher.find_template_in_screenshot(tip_template,threshold=0.6)
+                        if not tip_result:
+                            tip_result = image_matcher.find_template_in_screenshot(tip_template,threshold=0.45)
+                            image_matcher.create_marked_screenshot_for_single_template(tip_template,threshold=0.45)
+                            attach_screenshot_to_allure(driver,'email_detail_tip_not_found','没有找到二次确认弹窗')
+                            pytest.exit("没有找到二次确认弹窗", returncode=1)
+                        else:
+                            tip_x, tip_y, tip_confidence = tip_result
+                            tip_x, tip_y, tip_confidence = int(tip_x), int(tip_y), float(tip_confidence)
+                            allure.attach(f"二次确认弹窗位置: ({tip_x}, {tip_y}), 置信度: {tip_confidence:.3f}", "二次确认弹窗查找结果", allure.attachment_type.TEXT)
+                            attach_screenshot_to_allure(driver,'email_detail_tip_found',"找到了二次确认弹窗")
+
+            except Exception as e:
+                attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
+                pytest.exit(f"测试点击一键删除按钮失败: {e}", returncode=1)
+
+        with allure.step("点击二次确认弹窗确定按钮，删除邮件，验证是否删除成功，进入邮件页，验证空态图标是否展示"):
+            try:
+                image_matcher = create_image_matcher(driver)
+                template = 'src/resources/templates/common/email/email_button/email_confirm_delete_button_common.png'
+                result = image_matcher.find_template_in_screenshot(template,threshold=0.6)
+                found_threshold = 0.6
+                if not result:
+                    result = image_matcher.find_template_in_screenshot(template,threshold=0.45)
+                    found_threshold = 0.45
+                if not result:
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=0.45)
+                    attach_screenshot_to_allure(driver,'email_confirm_delete_button_not_found','没有找到确定删除按钮')
+                    pytest.exit("没有找到确定删除按钮", returncode=1)
+                else:
+                    x, y, confidence = result
+                    x, y, confidence = int(x), int(y), float(confidence)
+                    allure.attach(f"确定删除按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}", "确定删除按钮查找结果", allure.attachment_type.TEXT)
+                    image_matcher.create_marked_screenshot_for_single_template(template,threshold=found_threshold)
+                    attach_screenshot_to_allure(driver,'email_confirm_delete_button_found',"找到了确定删除按钮")
+                    driver.click(x, y)
+                    time.sleep(2)
+                    with allure.step("验证是否删除了邮件，查找空态图标是否展示"):
+                        null_template = 'src/resources/templates/common/email/email_icon/email_null_icon_common.png'
+                        null_result = image_matcher.find_template_in_screenshot(null_template,threshold=0.6)
+                        if not null_result:
+                            null_result = image_matcher.find_template_in_screenshot(null_template,threshold=0.45)
+                            image_matcher.create_marked_screenshot_for_single_template(null_template,threshold=0.45)
+                            attach_screenshot_to_allure(driver,'email_null_icon_not_found','没有找到空态图标')
+                            pytest.exit("没有找到空态图标", returncode=1)
+                        else:
+                            null_x, null_y, null_confidence = null_result
+                            null_x, null_y, null_confidence = int(null_x), int(null_y), float(null_confidence)
+                            allure.attach(f"空态图标位置: ({null_x}, {null_y}), 置信度: {null_confidence:.3f}", "空态图标查找结果", allure.attachment_type.TEXT)
+                            attach_screenshot_to_allure(driver,'email_null_icon_found',"找到了空态图标")
+            
+            except Exception as e:
+                attach_screenshot_to_allure(driver, "email_button_click_error", f"[{get_current_time_str()}] 用例发生异常，立即退出: {e}")
+                pytest.exit(f"测试点击确定删除按钮失败: {e}", returncode=1)
