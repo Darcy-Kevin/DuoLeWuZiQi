@@ -1,0 +1,7 @@
+模板匹配详细信息:
+模板文件: gamehome_email_button_not_reddot_common.png
+匹配位置: (825, 2515)
+置信度: 1.000
+阈值: 0.6
+匹配状态: 成功
+标记截图路径: src/resources/screenshots/marked_gamehome_email_button_not_reddot_common.png_1762860318.png
