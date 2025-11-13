@@ -2478,6 +2478,7 @@ class TestDuoleWuZiQiAppEmail:
                     attach_screenshot_to_allure(
                         driver, "email_not_reddot_button_not_found", "没有找到邮件按钮"
                     )
+                    pytest.exit(f"没有找到邮件按钮{e}",returncode=1)
                 else:
                     x, y, confidence = result
                     x, y, confidence = int(x), int(y), float(confidence)
