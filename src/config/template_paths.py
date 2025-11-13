@@ -225,14 +225,33 @@ class TemplatePaths:
     class pkhome:
         class button:
             start = _path(
-                "pkhome",
-                "pkhome_button",
-                "pkhome_rule_start_button_common.png"
-            )
-        class text:
-            rule = _path(
-                "pkhome",
-                "pkhome_text",
-                "pkhome_rule_text_common.png"
+                "pkhome", "pkhome_button", "pkhome_rule_start_button_common.png"
             )
 
+        class text:
+            rule = _path("pkhome", "pkhome_text", "pkhome_rule_text_common.png")
+
+    class gift_dialog:
+        class button:
+            chongzhi_close = _path(
+                "gift_dialog",
+                "gift_dialog_button",
+                "gift_dialog_chongzhi_close_button_common.png",
+            )
+        class text:
+            chongzhi = _path(
+                "gift_dialog",
+                "gift_dialog_text",
+                "gift_dialog_chongzhi_text_common.png",
+            )
+            jiujijin = _path(
+                "gift_dialog",
+                "gift_dialog_text",
+                "gift_dialog_jiujijin_text_common.png",
+            )
+        class icon:
+            share = _path(
+                "gift_dialog",
+                "gift_dialog_icon",
+                "gift_dialog_share_icon_common.png",
+            )

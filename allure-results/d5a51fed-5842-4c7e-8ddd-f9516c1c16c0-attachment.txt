@@ -1,7 +1,0 @@
-模板匹配详细信息:
-模板文件: gamehome_pve_button_common.png
-匹配位置: (600, 1040)
-置信度: 1.000
-阈值: 0.6
-匹配状态: 成功
-标记截图路径: src/resources/screenshots/marked_gamehome_pve_button_common.png_1762999805.png

@@ -23,18 +23,24 @@ DuoLeWuZiQi/
 │   │   ├── app_email/              # 邮件红点/退场用例
 │   │   └── app_signin/             # 每日签到用例
 │   └── utils/                      # 截图、时间、滑动、图像匹配等工具库
+├── scripts/
+│   ├── run/                        # 运行用例脚本
+│   │   ├── run_tests.sh            # 批量执行所有测试
+│   │   └── run_single_test.sh      # 单个/筛选用例执行脚本
+│   ├── report/                     # 报告相关脚本
+│   │   ├── stop_report_server.sh   # 停止报告服务器
+│   │   └── cleanup_report_servers.sh  # 清理报告服务器
+│   └── setup.sh                    # 环境初始化脚本
+├── tools/                          # 工具脚本
+│   ├── create_template_common.py   # 模板生成辅助脚本
+│   ├── email_request.sh            # 邮件造数 curl 脚本
+│   └── email_request_for_python.py # 邮件造数 Python 示例
 ├── allure-results/                 # pytest --alluredir 输出目录
 ├── allure-report/                  # allure generate/serve 输出目录
 ├── artifacts/                      # 用例产物输出（流程图预览、说明文档等）
-├── create_template/                # 模板生成辅助脚本
-├── venv/                           # 项目虚拟环境（由 setup.sh 创建）
+├── venv/                           # 项目虚拟环境（由 scripts/setup.sh 创建）
 ├── requirements.txt                # Python 依赖清单
-├── setup.sh                        # 环境初始化脚本
-├── run_tests.sh                    # 批量执行所有测试
-├── run_single_test.sh              # 单个/筛选用例执行脚本
-├── email_request.sh                # 邮件造数 curl 脚本
-├── email_request_for_python.py     # 邮件造数 Python 示例
-└── app_email_test_flowchart.md     # 邮件红点用例流程文档（Mermaid）
+└── README.md                       # 项目说明文档
 ```
 
 ## 环境要求
@@ -45,21 +51,21 @@ DuoLeWuZiQi/
 - Homebrew 或 npm（用于安装 Allure CLI，可选但推荐）
 - 网络可访问邮件接口服务 `http://120.53.247.249:8012`
 
-> 提示：项目自带 `venv/` 目录，如需重新创建可删除该目录后重新执行 `./setup.sh`。
+> 提示：项目自带 `venv/` 目录，如需重新创建可删除该目录后重新执行 `./scripts/setup.sh`。
 
 ## 快速开始
 ```bash
 # 1. 赋予脚本执行权限（首次克隆后建议执行）
-chmod +x *.sh create_template/*.py
+chmod +x scripts/**/*.sh scripts/*.sh tools/*.py tools/*.sh
 
 # 2. 一键初始化虚拟环境与依赖
-./setup.sh
+./scripts/setup.sh
 
 # 3. 连接 Android 设备并确认 ADB 正常
 adb devices
 
 # 4. 运行全量 UI 测试
-./run_tests.sh
+./scripts/run/run_tests.sh
 ```
 
 执行完成后：
@@ -67,14 +73,16 @@ adb devices
 - 若本机安装了 Allure CLI，脚本会自动启动 `allure serve allure-results`
 
 ## 运行方式详解
-- **全量回归**：`./run_tests.sh`
+- **全量回归**：`./scripts/run/run_tests.sh`
   - 自动清理旧截图/缓存
   - 初始化 `uiautomator2` 服务
   - 默认执行 `src/tests/app_email/app_email_test.py`
   - 支持检测并选取首台在线设备（可通过 `ANDROID_SERIAL` 指定）
-- **单用例执行**：`./run_single_test.sh <pytest 选择器>`
-  - 示例：`./run_single_test.sh src/tests/app_launch/app_launch_test.py::TestDuoleWuZiQiApp::test_launch_app`
+- **单用例执行**：`./scripts/run/run_single_test.sh <pytest 选择器>`
+  - 示例：`./scripts/run/run_single_test.sh src/tests/app_launch/app_launch_test.py::TestDuoleWuZiQiApp::test_launch_app`
   - 支持传入 `-k`、`-m` 等原生 pytest 参数
+- **停止报告服务器**：`./scripts/report/stop_report_server.sh`
+- **清理报告服务器**：`./scripts/report/cleanup_report_servers.sh`
 - **手动执行**：
   ```bash
   source venv/bin/activate
@@ -98,14 +106,17 @@ adb devices
 
 ## 工具脚本与辅助资源
 - `artifacts/`：集中存放用例相关产物，例如 `preview_markdown.html`（邮件用例流程图 HTML 预览），便于浏览器直接查看。
-- `create_template/create_template_common.py`：交互式模板生成器，截取指定坐标的截图片段并保存为 `*_common.png`，便于扩展图像识别覆盖面。
-- `email_request.sh` 与 `email_request_for_python.py`：快速调用后台邮件接口，支撑邮件红点、签到红点等场景的前置数据准备。
+- `tools/create_template_common.py`：交互式模板生成器，截取指定坐标的截图片段并保存为 `*_common.png`，便于扩展图像识别覆盖面。
+- `tools/email_request.sh` 与 `tools/email_request_for_python.py`：快速调用后台邮件接口，支撑邮件红点、签到红点等场景的前置数据准备。
 - `src/utils/` 下提供的通用能力：
   - `image_utils.py`：OpenCV 模板匹配、圈选、批量匹配等方法
   - `screenshot_utils.py`：统一的截图命名、Allure 附件工具
   - `scroll_utils.py`：常见上下/左右滑动与遍历查找封装
   - `time_utils.py`：时间戳格式化工具
 - `src/config/coordinates.py`：按包名组织的资源 ID 映射，可通过 `set_current_app` 动态切换目标包。
+- `scripts/report/`：报告服务器管理脚本
+  - `stop_report_server.sh`：停止单个报告服务器
+  - `cleanup_report_servers.sh`：清理所有报告服务器进程
 
 ## Allure 报告
 1. 确认已安装 CLI（任选其一）：
