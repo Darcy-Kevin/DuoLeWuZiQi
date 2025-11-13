@@ -1,7 +1,0 @@
-模板匹配详细信息:
-模板文件: email_view_button_common.png
-匹配位置: (960, 632)
-置信度: 0.979
-阈值: 0.6
-匹配状态: 成功
-标记截图路径: src/resources/screenshots/marked_email_view_button_common.png_1762860329.png

@@ -1,7 +1,0 @@
-模板匹配详细信息:
-模板文件: email_get_text_common.png
-匹配位置: (595, 780)
-置信度: 0.988
-阈值: 0.6
-匹配状态: 成功
-标记截图路径: src/resources/screenshots/marked_email_get_text_common.png_1762860350.png
