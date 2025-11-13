@@ -34,6 +34,14 @@ class TemplatePaths:
                 "gamehome_button",
                 "gamehome_signin_button_reddot_common.png",
             )
+            more = _path(
+                "gamehome", "gamehome_button", "gamehome_more_button_common.png"
+            )
+            setting = _path(
+                "gamehome", "gamehome_button", "gamehome_setting_button_common.png"
+            )
+            pvp = _path("gamehome", "gamehome_button", "gamehome_pvp_button_common.png")
+            pve = _path("gamehome", "gamehome_button", "gamehome_pve_button_common.png")
 
         class text:
             pass
@@ -187,3 +195,44 @@ class TemplatePaths:
                 "signin_dialog_text",
                 "signin_dialog_title_text_common.png",
             )
+
+        class icon:
+            share = _path(
+                "signin_dialog",
+                "signin_dialog_icon",
+                "signin_dialog_share_icon_common.png",
+            )
+
+    class setting:
+        class button:
+            gamesetting = _path(
+                "setting",
+                "setting_button",
+                "setting_gamesetting_select_button_common.png",
+            )
+            update = _path(
+                "setting", "setting_button", "setting_update_button_common.png"
+            )
+            back = _path("setting", "setting_button", "setting_back_button_common.png")
+
+        class text:
+            music = _path("setting", "setting_text", "setting_music_text_common.png")
+            review = _path("setting", "setting_text", "setting_review_text_common.png")
+            reviewed = _path(
+                "setting", "setting_text", "setting_reviewed_text_common.png"
+            )
+
+    class pkhome:
+        class button:
+            start = _path(
+                "pkhome",
+                "pkhome_button",
+                "pkhome_rule_start_button_common.png"
+            )
+        class text:
+            rule = _path(
+                "pkhome",
+                "pkhome_text",
+                "pkhome_rule_text_common.png"
+            )
+
