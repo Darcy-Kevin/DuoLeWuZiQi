@@ -178,6 +178,47 @@ class ImageMatcher:
             print("未找到可点击的元素")
             return False
     
+    def quick_click(self, x: int, y: int, times: int = 5, interval: float = 0.05) -> None:
+        """
+        快速点击指定位置多次
+        
+        Args:
+            x: 点击的x坐标
+            y: 点击的y坐标
+            times: 点击次数，默认为5次
+            interval: 每次点击之间的间隔（秒），默认为0.05秒（50毫秒）
+        """
+        import time
+        for i in range(times):
+            self.driver.click(x, y)
+            if i < times - 1:  # 最后一次点击后不需要等待
+                time.sleep(interval)
+        print(f"快速点击了位置({x}, {y}) {times}次，间隔{interval}秒")
+    
+    def quick_click_template(self, template_path: str, threshold: float = 0.8, 
+                            times: int = 5, interval: float = 0.05) -> bool:
+        """
+        找到模板图像后快速点击多次
+        
+        Args:
+            template_path: 模板图像路径
+            threshold: 匹配阈值
+            times: 点击次数，默认为5次
+            interval: 每次点击之间的间隔（秒），默认为0.05秒（50毫秒）
+            
+        Returns:
+            True if clicked, False if not found
+        """
+        match_result = self.find_template_in_screenshot(template_path, threshold)
+        if match_result:
+            x, y, confidence = match_result
+            self.quick_click(x, y, times, interval)
+            print(f"快速点击了位置({x}, {y}) {times}次，置信度={confidence:.3f}")
+            return True
+        else:
+            print("未找到可点击的元素")
+            return False
+    
     def _apply_nms(self, matches, template_width, template_height, overlap_threshold=0.3):
         """
         应用非最大值抑制来过滤重叠的匹配
