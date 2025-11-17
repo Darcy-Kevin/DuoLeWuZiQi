@@ -17,30 +17,27 @@ def get_send_count(default: int = 1) -> int:
         return default
 
 
-url = "http://120.53.247.249:8012/mails/send"
+url = "http://152.136.37.218:8012/mails/send"
 
 payload = {
     "passwd": "sscvrbbt532dfdgnmjyukukueghkkuhegnklethjk7gcs",
     "mailInfo": {
-        "userlist": [190989],
+        "userlist": [289086244],
         "addresser": "多乐五子棋团队",  # 发件人
         "title": "测试红点退场逻辑2",  # 邮件标题
         # 邮件内容
         "content": "亲爱的玩家：\n        感谢您的举报，经过多轮人工审核，查询您举报的牌局证明该玩家作弊，我们将对其进行封禁处理。给您的游戏豆补偿为您与违规用户所有对局的净输豆，若未对您造成损失，我们则不会进行补偿，请知悉。\n        多乐跑得快致力于打击各种类型的作弊行为，维护公平的游戏环境，给您和其他正直的玩家带来良好的游戏体验，再次感谢您对反作弊工作的支持。",
-        "days": 1001,  # 邮件过期时间
+        "days": 7,  # 邮件过期时间
         "type": 0,  # 邮件类型，0：个人邮件；1：全服邮件
         "props": [
             {
-            "proptype": 0,  # 道具类型，0：数量道具；1：是时间道具；2：永久道具
-            "propid": 2,  # 道具id，0：游戏豆；1：多乐币；2：悔棋卡
-            "delta": 1,
+                "proptype": 0,  # 道具类型，0：数量道具；1：是时间道具；2：永久道具
+                "propid": 2,  # 道具id，0：游戏豆；1：多乐币；2：悔棋卡
+                "delta": 1,
             }
         ],
         "from": 3,
-        "extraInfo": {
-            "type": 1, 
-            "extra": ""
-        },  # 链接，6：内链
+        "extraInfo": {"type": 7, "extra": ""},  # 链接，6：内链
     },
 }
 

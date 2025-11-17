@@ -21,14 +21,29 @@ if [ -f ".allure_server.pid" ]; then
   rm -f .allure_server.pid .allure_server.port
 fi
 
-# 2. 停止所有占用8000-8010端口的Python HTTP服务器
-for port in {8000..8010}; do
+# 2. 停止所有占用8000-8020端口的Python HTTP服务器
+for port in {8000..8020}; do
   PID=$(lsof -ti:$port 2>/dev/null)
   if [ -n "$PID" ]; then
-    # 检查是否是Python HTTP服务器
-    if ps -p $PID -o command= 2>/dev/null | grep -q "python3 -m http.server"; then
+    # 检查是否是Python HTTP服务器（匹配任何Python路径和http.server）
+    CMD=$(ps -p $PID -o command= 2>/dev/null)
+    if echo "$CMD" | grep -qE "http\.server"; then
       echo "停止占用端口 $port 的服务器进程 (PID: $PID)..."
-      kill $PID 2>/dev/null && STOPPED_COUNT=$((STOPPED_COUNT + 1))
+      kill $PID 2>/dev/null
+      STOPPED_COUNT=$((STOPPED_COUNT + 1))
+      # 等待进程停止，最多等待3秒
+      for i in {1..6}; do
+        if ! kill -0 $PID 2>/dev/null; then
+          break
+        fi
+        sleep 0.5
+      done
+      # 如果进程仍在运行，强制终止
+      if kill -0 $PID 2>/dev/null; then
+        echo "  强制终止进程 (PID: $PID)..."
+        kill -9 $PID 2>/dev/null
+        sleep 1
+      fi
     fi
   fi
 done

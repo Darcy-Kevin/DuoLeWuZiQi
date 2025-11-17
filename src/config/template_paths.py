@@ -34,12 +34,8 @@ class TemplatePaths:
                 "gamehome_button",
                 "gamehome_signin_button_reddot_common.png",
             )
-            more = _path(
-                "gamehome", "gamehome_button", "gamehome_more_button_common.png"
-            )
-            setting = _path(
-                "gamehome", "gamehome_button", "gamehome_setting_button_common.png"
-            )
+            more = "src/resources/templates/common/gamehome/gamehome_button/gamehome_more_button_common.png"
+            setting = "src/resources/templates/common/gamehome/gamehome_button/gamehome_setting_button_common.png"
             pvp = _path("gamehome", "gamehome_button", "gamehome_pvp_button_common.png")
             pve = _path("gamehome", "gamehome_button", "gamehome_pve_button_common.png")
 
@@ -166,7 +162,7 @@ class TemplatePaths:
                 "email_detail_get_text_common.png",
             )
 
-    class announcement:
+    class announcement_detail:
         class button:
             close = _path(
                 "announcement_detail",
@@ -183,18 +179,15 @@ class TemplatePaths:
 
     class signin_dialog:
         class button:
-            close = _path(
-                "signin_dialog",
-                "signin_dialog_button",
-                "signin_dialog_close_button_common.png",
-            )
+            close = "src/resources/templates/common/signin_dialog/signin_dialog_button/signin_dialog_close_button_common.png"
 
         class text:
-            title = _path(
-                "signin_dialog",
-                "signin_dialog_text",
-                "signin_dialog_title_text_common.png",
-            )
+            # title = _path(
+            #     "signin_dialog",
+            #     "signin_dialog_text",
+            #     "signin_dialog_title_text_common.png",
+            # )
+            title = "src/resources/templates/common/signin_dialog/signin_dialog_text/signin_dialog_title_text_common.png"
 
         class icon:
             share = _path(
@@ -205,11 +198,7 @@ class TemplatePaths:
 
     class setting:
         class button:
-            gamesetting = _path(
-                "setting",
-                "setting_button",
-                "setting_gamesetting_select_button_common.png",
-            )
+            gamesetting = "src/resources/templates/common/setting/setting_button/setting_gamesetting_select_button_common.png"
             update = _path(
                 "setting", "setting_button", "setting_update_button_common.png"
             )
@@ -238,6 +227,7 @@ class TemplatePaths:
                 "gift_dialog_button",
                 "gift_dialog_chongzhi_close_button_common.png",
             )
+
         class text:
             chongzhi = _path(
                 "gift_dialog",
@@ -249,6 +239,7 @@ class TemplatePaths:
                 "gift_dialog_text",
                 "gift_dialog_jiujijin_text_common.png",
             )
+
         class icon:
             share = _path(
                 "gift_dialog",

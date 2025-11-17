@@ -74,32 +74,54 @@ if command -v allure &> /dev/null; then
         rm -f .allure_server.pid .allure_server.port
       fi
       
-      # 2. 停止所有占用8000-8010端口的Python HTTP服务器
+      # 2. 停止所有占用8000-8020端口的Python HTTP服务器
       STOPPED_COUNT=0
-      for port in {8000..8010}; do
+      for port in {8000..8020}; do
         PID=$(lsof -ti:$port 2>/dev/null)
         if [ -n "$PID" ]; then
-          # 检查是否是Python HTTP服务器
-          if ps -p $PID -o command= 2>/dev/null | grep -q "python3 -m http.server"; then
+          # 检查是否是Python HTTP服务器（匹配任何Python路径和http.server）
+          CMD=$(ps -p $PID -o command= 2>/dev/null)
+          if echo "$CMD" | grep -qE "http\.server"; then
             echo "  停止占用端口 $port 的服务器进程 (PID: $PID)..."
             kill $PID 2>/dev/null
             STOPPED_COUNT=$((STOPPED_COUNT + 1))
+            # 等待进程停止，最多等待3秒
+            for i in {1..6}; do
+              if ! kill -0 $PID 2>/dev/null; then
+                break
+              fi
+              sleep 0.5
+            done
+            # 如果进程仍在运行，强制终止
+            if kill -0 $PID 2>/dev/null; then
+              echo "  强制终止进程 (PID: $PID)..."
+              kill -9 $PID 2>/dev/null
+              sleep 1
+            fi
           fi
         fi
       done
       
-      # 3. 等待进程完全停止
+      # 3. 额外等待确保端口释放
       if [ $STOPPED_COUNT -gt 0 ]; then
-        echo "  等待进程停止..."
+        echo "  等待端口释放..."
         sleep 2
       fi
       
-      # 使用固定端口8000（现在应该可用了）
+      # 4. 查找可用端口（优先使用8000，如果被占用则尝试8001-8020）
       REPORT_PORT=8000
+      PORT_FOUND=false
+      for port in {8000..8020}; do
+        if ! lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+          REPORT_PORT=$port
+          PORT_FOUND=true
+          break
+        fi
+      done
       
-      # 验证端口是否可用
-      if lsof -Pi :$REPORT_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
-        echo "⚠️  端口 $REPORT_PORT 仍被占用，尝试直接打开文件..."
+      # 如果所有端口都被占用，尝试直接打开文件
+      if [ "$PORT_FOUND" = false ]; then
+        echo "⚠️  端口 8000-8020 均被占用，尝试直接打开文件..."
         REPORT_DIR=$(cd allure-report && pwd)
         open "$REPORT_DIR/index.html"
         echo "✅ 报告已在浏览器中打开（直接打开文件）"

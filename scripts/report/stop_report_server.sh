@@ -23,14 +23,22 @@ if [ -f ".allure_server.pid" ]; then
   fi
 fi
 
-# 查找 Python HTTP 服务器进程（用于 Allure 报告，包括8000-8010端口）
-PIDS=$(ps aux | grep -E 'python3 -m http.server [0-9]+' | grep -v grep | awk '{print $2}')
+# 查找 Python HTTP 服务器进程（用于 Allure 报告，包括8000-8020端口）
+PIDS=$(ps aux | grep -E 'http\.server' | grep -v grep | awk '{print $2}')
 
-# 也查找占用8000端口的进程（可能是之前的报告服务器）
-PORT_8000_PID=$(lsof -ti:8000 2>/dev/null)
-if [ -n "$PORT_8000_PID" ]; then
-  PIDS="$PIDS $PORT_8000_PID"
-fi
+# 也查找占用8000-8020端口的进程（可能是之前的报告服务器）
+for port in {8000..8020}; do
+  PORT_PID=$(lsof -ti:$port 2>/dev/null)
+  if [ -n "$PORT_PID" ]; then
+    CMD=$(ps -p $PORT_PID -o command= 2>/dev/null)
+    if echo "$CMD" | grep -qE "http\.server"; then
+      PIDS="$PIDS $PORT_PID"
+    fi
+  fi
+done
+
+# 去重
+PIDS=$(echo $PIDS | tr ' ' '\n' | sort -u | tr '\n' ' ')
 
 if [ -z "$PIDS" ]; then
   echo "❌ 未找到运行中的报告服务器"
