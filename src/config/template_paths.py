@@ -36,8 +36,8 @@ class TemplatePaths:
             )
             more = "src/resources/templates/common/gamehome/gamehome_button/gamehome_more_button_common.png"
             setting = "src/resources/templates/common/gamehome/gamehome_button/gamehome_setting_button_common.png"
-            pvp = _path("gamehome", "gamehome_button", "gamehome_pvp_button_common.png")
-            pve = _path("gamehome", "gamehome_button", "gamehome_pve_button_common.png")
+            pvp = "src/resources/templates/common/gamehome/gamehome_button/gamehome_pvp_button_common.png"
+            pve = "src/resources/templates/common/gamehome/gamehome_button/gamehome_pve_button_common.png"
 
         class text:
             pass
@@ -202,7 +202,7 @@ class TemplatePaths:
             update = _path(
                 "setting", "setting_button", "setting_update_button_common.png"
             )
-            back = _path("setting", "setting_button", "setting_back_button_common.png")
+            back = "src/resources/templates/common/setting/setting_button/setting_back_button_common.png"
 
         class text:
             music = _path("setting", "setting_text", "setting_music_text_common.png")

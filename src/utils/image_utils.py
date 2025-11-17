@@ -93,9 +93,9 @@ class ImageMatcher:
                 center_x = best_match[0] + w // 2
                 center_y = best_match[1] + h // 2
 
-                print(f"扫描完成，找到{len(matches)}个匹配位置")
+                print(f"[{get_current_time_str()}]{len(matches)}个匹配位置")
                 print(
-                    f"最佳匹配: 位置({center_x}, {center_y}), 置信度={best_match[2]:.3f}"
+                    f"[{get_current_time_str()}]最佳匹配: 位置({center_x}, {center_y}), 置信度={best_match[2]:.3f}"
                 )
 
                 # 打印前5个最佳匹配
@@ -114,9 +114,9 @@ class ImageMatcher:
                 center_x = max_loc[0] + w // 2
                 center_y = max_loc[1] + h // 2
 
-                print(f"扫描完成，未找到符合阈值的匹配")
+                print(f"[{get_current_time_str()}]扫描完成，未找到符合阈值的匹配")
                 print(
-                    f"最高置信度位置: ({int(center_x)}, {int(center_y)}), 置信度={float(max_val):.3f}, 阈值={threshold}"
+                    f"[{get_current_time_str()}]最高置信度位置: ({int(center_x)}, {int(center_y)}), 置信度={float(max_val):.3f}, 阈值={threshold}"
                 )
                 return None
 
@@ -459,7 +459,7 @@ class ImageMatcher:
                 )
 
                 print(
-                    f"模板匹配失败: {template_name}, 最高置信度位置({center_x}, {center_y}), 置信度={float(max_val):.3f}"
+                    f"[{get_current_time_str()}]模板匹配失败: {template_name}, 最高置信度位置({center_x}, {center_y}), 置信度={float(max_val):.3f}"
                 )
 
             # 保存标记后的截图
@@ -497,7 +497,9 @@ class ImageMatcher:
                     attachment_type=allure.attachment_type.TEXT,
                 )
 
-                print(f"已将标记截图附加到Allure报告: {marked_screenshot_path}")
+                print(
+                    f"[{get_current_time_str()}]已将标记截图附加到Allure报告: {marked_screenshot_path}"
+                )
 
             except ImportError:
                 print("Allure未安装，跳过报告附加")

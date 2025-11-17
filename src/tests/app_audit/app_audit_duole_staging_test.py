@@ -97,7 +97,7 @@ class TestAppAuditDuoleStaging:
     @allure.title("切换为审核中状态")
     def test_switch_to_audit_mode_staging(self, driver: u2.Device):
         """切换为审核中状态"""
-        with allure.step("大厅点击更多按钮"):
+        with allure.step("游戏大厅点击更多按钮，打开更多菜单"):
             image_matcher = create_image_matcher(driver)
             try:
                 more_template = TemplatePaths.gamehome.button.more
@@ -118,7 +118,10 @@ class TestAppAuditDuoleStaging:
                 if not more_result:
                     print(f"[{get_current_time_str()}]没有找到更多按钮按钮，终止用例")
                     image_matcher.create_marked_screenshot_for_single_template(
-                        more_template, threshold=threshold[-1]
+                        more_template,
+                        threshold=threshold[
+                            -1
+                        ],  # thresholds列表是按顺序执行，【-1】是最后一个
                     )
                     allure.attach(
                         driver,
@@ -133,7 +136,7 @@ class TestAppAuditDuoleStaging:
                     float(more_result[2]),
                 )
                 print(
-                    f"[{get_current_time_str()}]游戏大厅更多按钮已找到，位置({x}, {y}), 置信度={confidence:.3f}"
+                    f"[{get_current_time_str()}]游戏大厅更多按钮已找到，位置({x}, {y}), 置信度={confidence:.3f},查找阈值={int(threshold*100)}"
                 )
                 allure.attach(
                     f"更多按钮已找到，位置({x}, {y}), 置信度={confidence:.3f}",
@@ -163,12 +166,12 @@ class TestAppAuditDuoleStaging:
                 )
                 attach_screenshot_to_allure(
                     driver,
-                    "login_verification_error",
+                    "gamehome_click_more_button_error",
                     f"[{get_current_time_str()}] 点击更多按钮验证错误时的界面",
                 )
-                pytest.fail(f"大厅点击更多按钮失败: {e}")
+                pytest.fail(f"游戏大厅点击更多按钮失败: {e}")
 
-        with allure.step("更多菜单中点击设置按钮"):
+        with allure.step("更多菜单中点击设置按钮，进入设置页"):
             image_matcher = create_image_matcher(driver)
             try:
                 setting_template = TemplatePaths.gamehome.button.setting
@@ -186,25 +189,13 @@ class TestAppAuditDuoleStaging:
                         used_threshold = threshold
                         break
 
-                if not setting_result:
-                    print(f"[{get_current_time_str()}]没有找到设置按钮，终止用例")
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        setting_template, threshold=threshold[-1]
-                    )
-                    allure.attach(
-                        driver,
-                        "gamehome_setting_button_not_found",
-                        "游戏大厅设置按钮没有找到",
-                    )
-                    pytest.fail("游戏大厅设置按钮没有找到")
-
                 x, y, confidence = (
                     int(setting_result[0]),
                     int(setting_result[1]),
                     float(setting_result[2]),
                 )
                 print(
-                    f"[{get_current_time_str()}]游戏大厅设置按钮已找到，位置({x}, {y}), 置信度={confidence:.3f}"
+                    f"[{get_current_time_str()}]游戏大厅设置按钮已找到，位置({x}, {y}), 置信度={confidence:.3f},查找阈值={int(threshold*100)}"
                 )
                 allure.attach(
                     f"设置按钮已找到，位置({x}, {y}), 置信度={confidence:.3f}",
@@ -221,6 +212,18 @@ class TestAppAuditDuoleStaging:
                 )
                 driver.click(x, y)
                 time.sleep(1)
+
+                if not setting_result:
+                    print(f"[{get_current_time_str()}]没有找到设置按钮，终止用例")
+                    image_matcher.create_marked_screenshot_for_single_template(
+                        setting_template, threshold=threshold[-1]
+                    )
+                    allure.attach(
+                        driver,
+                        "gamehome_setting_button_not_found",
+                        "游戏大厅设置按钮没有找到",
+                    )
+                    pytest.fail("游戏大厅设置按钮没有找到")
 
                 with allure.step("验证是否进入了设置页"):
                     image_matcher = create_image_matcher(driver)
@@ -239,6 +242,28 @@ class TestAppAuditDuoleStaging:
                             used_threshold = threshold
                             break
 
+                    x, y, confidence = (
+                        int(gamesetting_result[0]),
+                        int(gamesetting_result[1]),
+                        float(gamesetting_result[2]),
+                    )
+                    print(
+                        f"[{get_current_time_str()}]游戏设置按钮已找到，位置({x}, {y}), 置信度={confidence:.3f}"
+                    )
+                    allure.attach(
+                        f"游戏设置已找到，位置({x}, {y}), 置信度={confidence:.3f}",
+                        "游戏设置按钮查找结果",
+                        allure.attachment_type.TEXT,
+                    )
+                    image_matcher.create_marked_screenshot_for_single_template(
+                        gamesetting_template, threshold=used_threshold
+                    )
+                    attach_screenshot_to_allure(
+                        driver,
+                        "setting_gamesetting_button_found",
+                        f"[{get_current_time_str()}] 游戏设置按钮已找到",
+                    )
+
                     if not gamesetting_result:
                         print(
                             f"[{get_current_time_str()}]没有找到游戏设置按钮，终止用例"
@@ -252,28 +277,6 @@ class TestAppAuditDuoleStaging:
                             "游戏设置按钮没有找到",
                         )
                         pytest.fail("游戏设置按钮没有找到")
-
-                    x, y, confidence = (
-                        int(gamesetting_result[0]),
-                        int(gamesetting_result[1]),
-                        float(gamesetting_result[2]),
-                    )
-                    print(
-                        f"[{get_current_time_str()}]游戏设置按钮已找到，位置({x}, {y}), 置信度={confidence:.3f}"
-                    )
-                allure.attach(
-                    f"游戏设置已找到，位置({x}, {y}), 置信度={confidence:.3f}",
-                    "游戏设置按钮查找结果",
-                    allure.attachment_type.TEXT,
-                )
-                image_matcher.create_marked_screenshot_for_single_template(
-                    gamesetting_template, threshold=used_threshold
-                )
-                attach_screenshot_to_allure(
-                    driver,
-                    "setting_gamesetting_button_found",
-                    f"[{get_current_time_str()}] 游戏设置按钮已找到",
-                )
 
             except Exception as e:
                 err_msg = (
@@ -304,40 +307,24 @@ class TestAppAuditDuoleStaging:
                         f"[{get_current_time_str()}]正在以{int(threshold*100)}%阈值查找音乐文案..."
                     )
                     music_result = image_matcher.find_template_in_screenshot(
-                        music_template, threshold=found_threshold
+                        music_template, threshold=threshold
                     )
                     if music_result:
                         used_threshold = threshold
                         break
-                
-                if not music_result:
-                    print(f"[{get_current_time_str()}]没有找到音乐文案，终止用例")
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        music_template,
-                        threshold = thresholds[-1]
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "music_text_not_found",
-                        "没有找到北京音乐文案",
-                    )
-                    pytest.fail("没有找到背景音乐文案")
 
-                
-                # x, y, confidence = music_result
-                # x, y, confidence = int(x), int(y), float(confidence)
                 x, y, confidence = (
                     int(music_result[0]),
                     int(music_result[1]),
                     float(music_result[2]),
                 )
                 allure.attach(
-                    f"背景音乐文案位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+                    f"背景音乐文案位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {int(used_threshold*100)}",
                     "查找背景音乐文案结果",
                     allure.attachment_type.TEXT,
                 )
                 image_matcher.create_marked_screenshot_for_single_template(
-                    music_template, threshold=found_threshold
+                    music_template, threshold=threshold
                 )
                 attach_screenshot_to_allure(
                     driver,
@@ -346,6 +333,18 @@ class TestAppAuditDuoleStaging:
                 )
                 image_matcher.quick_click(x, y, times=10, interval=0.05)
                 time.sleep(0.2)  # 短暂等待，让提示出现
+
+                if not music_result:
+                    print(f"[{get_current_time_str()}]没有找到音乐文案，终止用例")
+                    image_matcher.create_marked_screenshot_for_single_template(
+                        music_template, threshold=thresholds[-1]
+                    )
+                    attach_screenshot_to_allure(
+                        driver,
+                        "music_text_not_found",
+                        "没有找到北京音乐文案",
+                    )
+                    pytest.fail("没有找到背景音乐文案")
 
                 with allure.step("双重校验：检查审核中或已审核状态"):
                     image_matcher = create_image_matcher(driver)
@@ -367,10 +366,8 @@ class TestAppAuditDuoleStaging:
                         )
                         if not review_result:
                             review_threshold = 0.45
-                            review_result = (
-                                image_matcher.find_template_in_screenshot(
-                                    review_template, threshold=review_threshold
-                                )
+                            review_result = image_matcher.find_template_in_screenshot(
+                                review_template, threshold=review_threshold
                             )
                         else:
                             review_threshold = found_threshold
@@ -402,10 +399,8 @@ class TestAppAuditDuoleStaging:
                         )
                         if not reviewed_result:
                             reviewed_threshold = 0.45
-                            reviewed_result = (
-                                image_matcher.find_template_in_screenshot(
-                                    reviewed_template, threshold=reviewed_threshold
-                                )
+                            reviewed_result = image_matcher.find_template_in_screenshot(
+                                reviewed_template, threshold=reviewed_threshold
                             )
                         else:
                             reviewed_threshold = found_threshold
@@ -455,12 +450,15 @@ class TestAppAuditDuoleStaging:
                         )
 
             except Exception as e:
+                err_msg = f"[{get_current_time_str()}]切换审核中状态发生错误: {e}"
+                print(err_msg)
+                allure.attach(err_msg, "错误信息", allure.attachment_type.TEXT)
                 attach_screenshot_to_allure(
                     driver,
                     "review_text_test_error",
-                    f"切换审核中状态失败: {e}",
+                    f"切换审核中时错误的页面",
                 )
-                pytest.exit(f"切换审核中状态失败: {e}", returncode=1)
+                pytest.fail(f"切换审核中状态失败: {e}")
 
     @allure.feature("审核中")
     @allure.story("设置页面")
@@ -471,41 +469,46 @@ class TestAppAuditDuoleStaging:
             image_matcher = create_image_matcher(driver)
             try:
                 update_button_template = TemplatePaths.setting.button.update
-                found_threshold = 0.6
+                threshold = 1
+                used_threshold = None
+                print(
+                    f"[{get_current_time_str()}]正在以{int(threshold*100)}%阈值查找检查更新按钮..."
+                )
                 update_result = image_matcher.find_template_in_screenshot(
-                    update_button_template, threshold=found_threshold
+                    update_button_template, threshold=threshold
                 )
                 if update_result:
-                    x, y, confidence = update_result
-                    x, y, confidence = int(x), int(y), float(confidence)
-
+                    used_threshold = threshold
+                    x, y, confidence = (
+                        int(update_result[0]),
+                        int(update_result[1]),
+                        float(update_result[2]),
+                    )
                     allure.attach(
-                        f"找到检查更新按钮 - 位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+                        f"找到检查更新按钮 - 位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {used_threshold}",
                         "验证结果：找到检查更新按钮（失败）",
                         allure.attachment_type.TEXT,
                     )
                     image_matcher.create_marked_screenshot_for_single_template(
-                        update_button_template, threshold=found_threshold
+                        update_button_template, threshold=used_threshold
                     )
                     attach_screenshot_to_allure(
                         driver,
                         "update_button_found",
                         "找到检查更新按钮（验证失败）",
                     )
-                    pytest.exit(
-                        "审核中状态下不应该显示检查更新按钮，但找到了，验证失败",
-                        returncode=1,
+                    pytest.fail(
+                        "审核中状态下不应该显示检查更新按钮，但找到了，验证失败"
                     )
 
-                # 如果没找到检查更新按钮，则成功（符合预期）
-                else:
+                if not update_result:
                     allure.attach(
-                        f"未找到检查更新按钮 - 查找阈值: {found_threshold}",
+                        f"未找到检查更新按钮 - 已尝试所有阈值: {threshold}",
                         "验证结果：未找到检查更新按钮（成功）",
                         allure.attachment_type.TEXT,
                     )
                     image_matcher.create_marked_screenshot_for_single_template(
-                        update_button_template, threshold=found_threshold
+                        update_button_template, threshold=threshold
                     )
                     attach_screenshot_to_allure(
                         driver,
@@ -514,581 +517,632 @@ class TestAppAuditDuoleStaging:
                     )
 
             except Exception as e:
+                err_msg = f"[{get_current_time_str()}]验证审核中是否检查更新按钮过程中发生错误: {e}"
+                print(err_msg)
+                allure.attach(
+                    err_msg,
+                    "错误信息",
+                    allure.attachment_type.TEXT,
+                )
                 attach_screenshot_to_allure(
                     driver,
                     "update_button_test_error",
                     f"验证检查更新按钮失败: {e}",
                 )
-                pytest.exit(f"验证检查更新按钮失败: {e}", returncode=1)
+                pytest.fail(f"验证检查更新按钮失败: {e}")
 
         with allure.step("返回游戏大厅"):
+            image_matcher = create_image_matcher(driver)
             try:
-                image_matcher = create_image_matcher(driver)
                 back_template = TemplatePaths.setting.button.back
-                found_threshold = 0.6
-                back_result = image_matcher.find_template_in_screenshot(
-                    back_template, threshold=found_threshold
-                )
-                if not back_result:
-                    found_threshold = 0.45
+                thresholds = [0.6, 0.45]
+                threshold = None
+                used_threshold = None
+                for threshold in thresholds:
+                    print(
+                        f"[{get_current_time_str()}]正在以{int(threshold*100)}%阈值查找返回按钮..."
+                    )
                     back_result = image_matcher.find_template_in_screenshot(
-                        back_template, threshold=found_threshold
+                        back_template, threshold=threshold
+                    )
+                    if back_result:
+                        used_threshold = threshold
+                        break
+
+                if not back_result:
+                    allure.attach(
+                        f"未找到返回按钮 - 已尝试所有阈值: {used_threshold}",
+                        "验证结果：未找到返回按钮（失败）",
+                        allure.attachment_type.TEXT,
+                    )
+                    image_matcher.create_marked_screenshot_for_single_template(
+                        back_template, threshold=thresholds[-1]
                     )
                     attach_screenshot_to_allure(
                         driver, "back_button_not_found", "没有找到返回按钮"
                     )
-                    pytest.exit("没有找到返回按钮", returncode=1)
-                else:
-                    x, y, confidence = back_result
-                    x, y, confidence = int(x), int(y), float(confidence)
+                    pytest.fail("没有找到返回按钮")
+
+                x, y, confidence = (
+                    int(back_result[0]),
+                    int(back_result[1]),
+                    float(back_result[2]),
+                )
+                allure.attach(
+                    f"返回按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {used_threshold}",
+                    "查找返回按钮结果",
+                    allure.attachment_type.TEXT,
+                )
+                image_matcher.create_marked_screenshot_for_single_template(
+                    back_template, threshold=threshold
+                )
+                attach_screenshot_to_allure(
+                    driver,
+                    "back_button_marked",
+                    "返回按钮匹配成功",
+                )
+                driver.click(x, y)
+                time.sleep(1)
+
+                with allure.step("验证是否回到了游戏大厅"):
+                    more_template = TemplatePaths.gamehome.button.more
+                    thresholds = [0.6, 0.45]
+                    threshold = None
+                    used_threshold = None
+
+                    for threshold in thresholds:
+                        print(
+                            f"[{get_current_time_str()}]正在以{int(threshold*100)}%阈值查找更多按钮..."
+                        )
+                        more_result = image_matcher.find_template_in_screenshot(
+                            more_template, threshold=threshold
+                        )
+                        if more_result:
+                            used_threshold = threshold
+                            break
+
+                    if not more_result:
+                        print(
+                            f"[{get_current_time_str()}]没有找到更多按钮按钮，终止用例"
+                        )
+                        image_matcher.create_marked_screenshot_for_single_template(
+                            more_template,
+                            threshold=threshold[
+                                -1
+                            ],  # thresholds列表是按顺序执行，【-1】是最后一个
+                        )
+                        allure.attach(
+                            driver,
+                            "gamehome_more_button_not_found",
+                            "游戏大厅更多按钮没有找到",
+                        )
+                        pytest.fail("游戏大厅更多按钮没有找到")
+
+                    x, y, confidence = (
+                        int(more_result[0]),
+                        int(more_result[1]),
+                        float(more_result[2]),
+                    )
                     allure.attach(
-                        f"返回按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                        "查找返回按钮结果",
+                        f"找到检查更新按钮 - 位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {used_threshold}",
+                        "验证结果：游戏大厅找到更多按钮（成功）",
                         allure.attachment_type.TEXT,
                     )
                     image_matcher.create_marked_screenshot_for_single_template(
-                        back_template, threshold=found_threshold
+                        more_template, threshold=threshold
                     )
                     attach_screenshot_to_allure(
                         driver,
-                        "back_button_marked",
-                        "返回按钮匹配成功",
+                        "gamehome_more_button_found",
+                        f"{get_current_time_str()}游戏大厅找到了更多按钮",
                     )
-                    driver.click(x, y)
-                    time.sleep(1)
 
-                    with allure.step("验证是否回到了游戏大厅"):
-                        image_matcher = create_image_matcher(driver)
-                        more_template = TemplatePaths.gamehome.button.more
-                        found_threshold = 0.6
-                        more_result = image_matcher.find_template_in_screenshot(
-                            more_template, threshold=found_threshold
-                        )
-                        if not more_result:
-                            pytest.exit("没有找到更多按钮", returncode=1)
-                        else:
-                            x, y, confidence = more_result
-                            x, y, confidence = (
-                                int(x),
-                                int(y),
-                                float(confidence),
-                            )
-                            allure.attach(
-                                f"更多按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                                "查找更多按钮结果",
-                                allure.attachment_type.TEXT,
-                            )
-                            image_matcher.create_marked_screenshot_for_single_template(
-                                more_template, threshold=found_threshold
-                            )
-                            attach_screenshot_to_allure(
-                                driver,
-                                "more_button_marked",
-                                "更多按钮匹配成功",
-                            )
             except Exception as e:
+                err_msg = f"[{get_current_time_str()}]验证返回大厅过程中发生错误: {e}"
+                print(err_msg)
+                allure.attach(err_msg, "错误信息", allure.attachment_type.TEXT)
                 attach_screenshot_to_allure(
                     driver,
                     "back_button_test_error",
-                    f"返回按钮测试失败: {e}",
+                    f"验证返回大厅失败: {e}",
                 )
-                pytest.exit(f"返回按钮测试失败: {e}", returncode=1)
+                pytest.fail(f"验证返回大厅失败: {e}")
 
-    @allure.feature("审核中")
-    @allure.story("设置页面")
-    @allure.title("测试审核中签到不支持分享功能")
-    def test_audit_mode_staging_not_support_share_signin(self, driver: u2.Device):
-        """测试审核中签到不支持分享功能"""
-        with allure.step("点击签到按钮打开签到弹窗"):
-            try:
-                image_matcher = create_image_matcher(driver)
-                signin_template = TemplatePaths.gamehome.button.signin
-                found_threshold = 0.6
-                signin_result = image_matcher.find_template_in_screenshot(
-                    signin_template, threshold=found_threshold
-                )
-                if not signin_result:
-                    found_threshold = 0.45
-                    signin_result = image_matcher.find_template_in_screenshot(
-                        signin_template, threshold=found_threshold
-                    )
-                else:
-                    x, y, confidence = signin_result
-                    x, y, confidence = int(x), int(y), float(confidence)
-                    allure.attach(
-                        f"签到按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                        "查找签到按钮结果",
-                        allure.attachment_type.TEXT,
-                    )
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        signin_template, threshold=found_threshold
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "signin_button_marked",
-                        "签到按钮匹配成功",
-                    )
-                    driver.click(x, y)
-                    time.sleep(1)
+    # @allure.feature("审核中")
+    # @allure.story("设置页面")
+    # @allure.title("测试审核中签到不支持分享功能")
+    # def test_audit_mode_staging_not_support_share_signin(self, driver: u2.Device):
+    #     """测试审核中签到不支持分享功能"""
+    #     with allure.step("点击签到按钮打开签到弹窗"):
+    #         try:
+    #             image_matcher = create_image_matcher(driver)
+    #             signin_template = TemplatePaths.gamehome.button.signin
+    #             found_threshold = 0.6
+    #             signin_result = image_matcher.find_template_in_screenshot(
+    #                 signin_template, threshold=found_threshold
+    #             )
+    #             if not signin_result:
+    #                 found_threshold = 0.45
+    #                 signin_result = image_matcher.find_template_in_screenshot(
+    #                     signin_template, threshold=found_threshold
+    #                 )
+    #             else:
+    #                 x, y, confidence = signin_result
+    #                 x, y, confidence = int(x), int(y), float(confidence)
+    #                 allure.attach(
+    #                     f"签到按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                     "查找签到按钮结果",
+    #                     allure.attachment_type.TEXT,
+    #                 )
+    #                 image_matcher.create_marked_screenshot_for_single_template(
+    #                     signin_template, threshold=found_threshold
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "signin_button_marked",
+    #                     "签到按钮匹配成功",
+    #                 )
+    #                 driver.click(x, y)
+    #                 time.sleep(1)
 
-                    with allure.step("验证签到弹窗是否打开"):
-                        image_matcher = create_image_matcher(driver)
-                        signin_dialog_title_template = (
-                            TemplatePaths.signin_dialog.text.title
-                        )
-                        found_threshold = 0.6
-                        signin_dialog_title_result = (
-                            image_matcher.find_template_in_screenshot(
-                                signin_dialog_title_template,
-                                threshold=found_threshold,
-                            )
-                        )
-                        if not signin_dialog_title_result:
-                            found_threshold = 0.45
-                            signin_dialog_title_result = (
-                                image_matcher.find_template_in_screenshot(
-                                    signin_dialog_title_template,
-                                    threshold=found_threshold,
-                                )
-                            )
-                        else:
-                            x, y, confidence = signin_dialog_title_result
-                            x, y, confidence = int(x), int(y), float(confidence)
-                            allure.attach(
-                                f"签到弹窗标题位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                                "查找签到弹窗标题结果",
-                                allure.attachment_type.TEXT,
-                            )
-                            image_matcher.create_marked_screenshot_for_single_template(
-                                signin_dialog_title_template,
-                                threshold=found_threshold,
-                            )
-                            attach_screenshot_to_allure(
-                                driver,
-                                "signin_dialog_title_marked",
-                                "签到弹窗标题匹配成功",
-                            )
+    #                 with allure.step("验证签到弹窗是否打开"):
+    #                     image_matcher = create_image_matcher(driver)
+    #                     signin_dialog_title_template = (
+    #                         TemplatePaths.signin_dialog.text.title
+    #                     )
+    #                     found_threshold = 0.6
+    #                     signin_dialog_title_result = (
+    #                         image_matcher.find_template_in_screenshot(
+    #                             signin_dialog_title_template,
+    #                             threshold=found_threshold,
+    #                         )
+    #                     )
+    #                     if not signin_dialog_title_result:
+    #                         found_threshold = 0.45
+    #                         signin_dialog_title_result = (
+    #                             image_matcher.find_template_in_screenshot(
+    #                                 signin_dialog_title_template,
+    #                                 threshold=found_threshold,
+    #                             )
+    #                         )
+    #                     else:
+    #                         x, y, confidence = signin_dialog_title_result
+    #                         x, y, confidence = int(x), int(y), float(confidence)
+    #                         allure.attach(
+    #                             f"签到弹窗标题位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                             "查找签到弹窗标题结果",
+    #                             allure.attachment_type.TEXT,
+    #                         )
+    #                         image_matcher.create_marked_screenshot_for_single_template(
+    #                             signin_dialog_title_template,
+    #                             threshold=found_threshold,
+    #                         )
+    #                         attach_screenshot_to_allure(
+    #                             driver,
+    #                             "signin_dialog_title_marked",
+    #                             "签到弹窗标题匹配成功",
+    #                         )
 
-            except Exception as e:
-                attach_screenshot_to_allure(
-                    driver,
-                    "signin_button_test_error",
-                    f"点击签到按钮失败: {e}",
-                )
-                pytest.exit(f"点击签到按钮失败: {e}", returncode=1)
+    #         except Exception as e:
+    #             attach_screenshot_to_allure(
+    #                 driver,
+    #                 "signin_button_test_error",
+    #                 f"点击签到按钮失败: {e}",
+    #             )
+    #             pytest.exit(f"点击签到按钮失败: {e}", returncode=1)
 
-        with allure.step("验证签到弹窗是否支持分享功能"):
-            image_matcher = create_image_matcher(driver)
-            try:
-                share_template = TemplatePaths.signin_dialog.icon.share
-                found_threshold = 0.6
-                share_result = image_matcher.find_template_in_screenshot(
-                    share_template, threshold=found_threshold
-                )
-                if share_result:
-                    x, y, confidence = share_result
-                    x, y, confidence = int(x), int(y), float(confidence)
-                    allure.attach(
-                        f"分享按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                        "查找分享按钮结果",
-                        allure.attachment_type.TEXT,
-                    )
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        share_template, threshold=found_threshold
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "share_button_marked",
-                        "分享按钮匹配成功",
-                    )
-                    pytest.exit(
-                        "审核中状态下不应该显示分享按钮，但找到了，验证失败",
-                        returncode=1,
-                    )
-                else:
-                    allure.attach(
-                        f"未找到分享按钮 - 查找阈值: {found_threshold}",
-                        "验证结果：未找到分享按钮（成功）",
-                        allure.attachment_type.TEXT,
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "share_button_not_found",
-                        "未找到分享按钮（验证成功）",
-                    )
-            except Exception as e:
-                attach_screenshot_to_allure(
-                    driver,
-                    "share_button_test_error",
-                    f"验证分享按钮失败: {e}",
-                )
-                pytest.exit(f"验证分享按钮失败: {e}", returncode=1)
+    #     with allure.step("验证签到弹窗是否支持分享功能"):
+    #         image_matcher = create_image_matcher(driver)
+    #         try:
+    #             share_template = TemplatePaths.signin_dialog.icon.share
+    #             found_threshold = 0.6
+    #             share_result = image_matcher.find_template_in_screenshot(
+    #                 share_template, threshold=found_threshold
+    #             )
+    #             if share_result:
+    #                 x, y, confidence = share_result
+    #                 x, y, confidence = int(x), int(y), float(confidence)
+    #                 allure.attach(
+    #                     f"分享按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                     "查找分享按钮结果",
+    #                     allure.attachment_type.TEXT,
+    #                 )
+    #                 image_matcher.create_marked_screenshot_for_single_template(
+    #                     share_template, threshold=found_threshold
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "share_button_marked",
+    #                     "分享按钮匹配成功",
+    #                 )
+    #                 pytest.exit(
+    #                     "审核中状态下不应该显示分享按钮，但找到了，验证失败",
+    #                     returncode=1,
+    #                 )
+    #             else:
+    #                 allure.attach(
+    #                     f"未找到分享按钮 - 查找阈值: {found_threshold}",
+    #                     "验证结果：未找到分享按钮（成功）",
+    #                     allure.attachment_type.TEXT,
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "share_button_not_found",
+    #                     "未找到分享按钮（验证成功）",
+    #                 )
+    #         except Exception as e:
+    #             attach_screenshot_to_allure(
+    #                 driver,
+    #                 "share_button_test_error",
+    #                 f"验证分享按钮失败: {e}",
+    #             )
+    #             pytest.exit(f"验证分享按钮失败: {e}", returncode=1)
 
-        with allure.step("关闭签到弹窗"):
-            image_matcher = create_image_matcher(driver)
-            try:
-                signin_dialog_close_template = TemplatePaths.signin_dialog.button.close
-                found_threshold = 0.6
-                signin_dialog_close_result = image_matcher.find_template_in_screenshot(
-                    signin_dialog_close_template, threshold=found_threshold
-                )
-                if not signin_dialog_close_result:
-                    found_threshold = 0.45
-                    signin_dialog_close_result = (
-                        image_matcher.find_template_in_screenshot(
-                            signin_dialog_close_template, threshold=found_threshold
-                        )
-                    )
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        signin_dialog_close_template, threshold=found_threshold
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "signin_dialog_close_button_marked",
-                        "签到弹窗关闭按钮匹配成功",
-                    )
-                    pytest.exit("没有找到签到弹窗关闭按钮", returncode=1)
-                else:
-                    x, y, confidence = signin_dialog_close_result
-                    x, y, confidence = int(x), int(y), float(confidence)
-                    allure.attach(
-                        f"签到弹窗关闭按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                        "查找签到弹窗关闭按钮结果",
-                        allure.attachment_type.TEXT,
-                    )
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        signin_dialog_close_template, threshold=found_threshold
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "signin_dialog_close_button_marked",
-                        "签到弹窗关闭按钮匹配成功",
-                    )
-                    driver.click(x, y)
-                    time.sleep(1)
-                    with allure.step("验证是否关闭了签到弹窗"):
-                        pvp_template = TemplatePaths.gamehome.button.pvp
-                        found_threshold = 0.6
-                        pvp_result = image_matcher.find_template_in_screenshot(
-                            pvp_template, threshold=found_threshold
-                        )
-                        if not pvp_result:
-                            found_threshold = 0.45
-                            pvp_result = image_matcher.find_template_in_screenshot(
-                                pvp_template, threshold=found_threshold
-                            )
-                        if not pvp_result:
-                            image_matcher.create_marked_screenshot_for_single_template(
-                                pvp_template, threshold=found_threshold
-                            )
-                            attach_screenshot_to_allure(
-                                driver,
-                                "gamehome_pvp_button_not_found",
-                                "游戏大厅人机对战入口没有找到",
-                            )
+    #     with allure.step("关闭签到弹窗"):
+    #         image_matcher = create_image_matcher(driver)
+    #         try:
+    #             signin_dialog_close_template = TemplatePaths.signin_dialog.button.close
+    #             found_threshold = 0.6
+    #             signin_dialog_close_result = image_matcher.find_template_in_screenshot(
+    #                 signin_dialog_close_template, threshold=found_threshold
+    #             )
+    #             if not signin_dialog_close_result:
+    #                 found_threshold = 0.45
+    #                 signin_dialog_close_result = (
+    #                     image_matcher.find_template_in_screenshot(
+    #                         signin_dialog_close_template, threshold=found_threshold
+    #                     )
+    #                 )
+    #                 image_matcher.create_marked_screenshot_for_single_template(
+    #                     signin_dialog_close_template, threshold=found_threshold
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "signin_dialog_close_button_marked",
+    #                     "签到弹窗关闭按钮匹配成功",
+    #                 )
+    #                 pytest.exit("没有找到签到弹窗关闭按钮", returncode=1)
+    #             else:
+    #                 x, y, confidence = signin_dialog_close_result
+    #                 x, y, confidence = int(x), int(y), float(confidence)
+    #                 allure.attach(
+    #                     f"签到弹窗关闭按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                     "查找签到弹窗关闭按钮结果",
+    #                     allure.attachment_type.TEXT,
+    #                 )
+    #                 image_matcher.create_marked_screenshot_for_single_template(
+    #                     signin_dialog_close_template, threshold=found_threshold
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "signin_dialog_close_button_marked",
+    #                     "签到弹窗关闭按钮匹配成功",
+    #                 )
+    #                 driver.click(x, y)
+    #                 time.sleep(1)
+    #                 with allure.step("验证是否关闭了签到弹窗"):
+    #                     pvp_template = TemplatePaths.gamehome.button.pvp
+    #                     found_threshold = 0.6
+    #                     pvp_result = image_matcher.find_template_in_screenshot(
+    #                         pvp_template, threshold=found_threshold
+    #                     )
+    #                     if not pvp_result:
+    #                         found_threshold = 0.45
+    #                         pvp_result = image_matcher.find_template_in_screenshot(
+    #                             pvp_template, threshold=found_threshold
+    #                         )
+    #                     if not pvp_result:
+    #                         image_matcher.create_marked_screenshot_for_single_template(
+    #                             pvp_template, threshold=found_threshold
+    #                         )
+    #                         attach_screenshot_to_allure(
+    #                             driver,
+    #                             "gamehome_pvp_button_not_found",
+    #                             "游戏大厅人机对战入口没有找到",
+    #                         )
 
-                        else:
-                            x, y, confidence = pvp_result
-                            x, y, confidence = int(x), int(y), float(confidence)
-                            allure.attach(
-                                f"人机对战位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                                "查找人机对战入口结果",
-                                allure.attachment_type.TEXT,
-                            )
-                            image_matcher.create_marked_screenshot_for_single_template(
-                                pvp_template,
-                                threshold=found_threshold,
-                            )
-                            attach_screenshot_to_allure(
-                                driver,
-                                "gamehome_pvp_button",
-                                "在大厅找到了人机对战入口",
-                            )
+    #                     else:
+    #                         x, y, confidence = pvp_result
+    #                         x, y, confidence = int(x), int(y), float(confidence)
+    #                         allure.attach(
+    #                             f"人机对战位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                             "查找人机对战入口结果",
+    #                             allure.attachment_type.TEXT,
+    #                         )
+    #                         image_matcher.create_marked_screenshot_for_single_template(
+    #                             pvp_template,
+    #                             threshold=found_threshold,
+    #                         )
+    #                         attach_screenshot_to_allure(
+    #                             driver,
+    #                             "gamehome_pvp_button",
+    #                             "在大厅找到了人机对战入口",
+    #                         )
 
-            except Exception as e:
-                attach_screenshot_to_allure(
-                    driver,
-                    "signin_dialog_close_button_test_error",
-                    f"关闭签到弹窗失败: {e}",
-                )
-                pytest.exit(f"关闭签到弹窗失败: {e}", returncode=1)
+    #         except Exception as e:
+    #             attach_screenshot_to_allure(
+    #                 driver,
+    #                 "signin_dialog_close_button_test_error",
+    #                 f"关闭签到弹窗失败: {e}",
+    #             )
+    #             pytest.exit(f"关闭签到弹窗失败: {e}", returncode=1)
 
-    @allure.feature("审核中")
-    @allure.story("救济金")
-    @allure.title("测试审核中救济金不支持分享功能")
-    def test_audit_mode_staging_not_support_share_jiujijin(self, driver: u2.Device):
-        with allure.step("点击棋力评测入口"):
+    # @allure.feature("审核中")
+    # @allure.story("救济金")
+    # @allure.title("测试审核中救济金不支持分享功能")
+    # def test_audit_mode_staging_not_support_share_jiujijin(self, driver: u2.Device):
+    #     with allure.step("点击棋力评测入口"):
 
-            try:
-                image_matcher = create_image_matcher(driver)
-                pve_template = TemplatePaths.gamehome.button.pve
-                found_threshold = 0.6
-                pve_result = image_matcher.find_template_in_screenshot(
-                    pve_template, threshold=found_threshold
-                )
-                if not pve_result:
-                    found_threshold = 0.45
-                    pve_result = image_matcher.find_template_in_screenshot(
-                        pve_template, threshold=found_threshold
-                    )
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        pve_template, threshold=found_threshold
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "gamehome_pve_button_not_found",
-                        "游戏大厅棋力评测入口没有找到",
-                    )
-                    pytest.exit(
-                        "没有找到棋力测评入口，验证失败",
-                        returncode=1,
-                    )
-                else:
-                    x, y, confidence = pve_result
-                    x, y, confidence = int(x), int(y), float(confidence)
-                    allure.attach(
-                        f"棋力评测位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                        "查找棋力评测入口结果",
-                        allure.attachment_type.TEXT,
-                    )
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        pve_template,
-                        threshold=found_threshold,
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "gamehome_pvp_button",
-                        "在大厅找到了棋力评测入口",
-                    )
-                    driver.click(x, y)
-                    time.sleep(1)
+    #         try:
+    #             image_matcher = create_image_matcher(driver)
+    #             pve_template = TemplatePaths.gamehome.button.pve
+    #             found_threshold = 0.6
+    #             pve_result = image_matcher.find_template_in_screenshot(
+    #                 pve_template, threshold=found_threshold
+    #             )
+    #             if not pve_result:
+    #                 found_threshold = 0.45
+    #                 pve_result = image_matcher.find_template_in_screenshot(
+    #                     pve_template, threshold=found_threshold
+    #                 )
+    #                 image_matcher.create_marked_screenshot_for_single_template(
+    #                     pve_template, threshold=found_threshold
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "gamehome_pve_button_not_found",
+    #                     "游戏大厅棋力评测入口没有找到",
+    #                 )
+    #                 pytest.exit(
+    #                     "没有找到棋力测评入口，验证失败",
+    #                     returncode=1,
+    #                 )
+    #             else:
+    #                 x, y, confidence = pve_result
+    #                 x, y, confidence = int(x), int(y), float(confidence)
+    #                 allure.attach(
+    #                     f"棋力评测位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                     "查找棋力评测入口结果",
+    #                     allure.attachment_type.TEXT,
+    #                 )
+    #                 image_matcher.create_marked_screenshot_for_single_template(
+    #                     pve_template,
+    #                     threshold=found_threshold,
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "gamehome_pvp_button",
+    #                     "在大厅找到了棋力评测入口",
+    #                 )
+    #                 driver.click(x, y)
+    #                 time.sleep(1)
 
-                    with allure.step("验证已经进入房间（未匹配状态）"):
-                        image_matcher = create_image_matcher(driver)
-                        start_template = TemplatePaths.pkhome.button.start
-                        found_threshold = 0.6
-                        start_result = image_matcher.find_template_in_screenshot(
-                            start_template, threshold=found_threshold
-                        )
-                        if not start_result:
-                            found_threshold = 0.45
-                            start_result = image_matcher.find_template_in_screenshot(
-                                start_template, threshold=found_threshold
-                            )
-                            image_matcher.create_marked_screenshot_for_single_template(
-                                start_template, threshold=found_threshold
-                            )
-                            attach_screenshot_to_allure(
-                                driver, "start_button_not_found", "房间内没找到开始按钮"
-                            )
-                            pytest.exit(
-                                "开始按钮没有找到，验证失败",
-                                returncode=1,
-                            )
-                        else:
-                            start_x, start_y, start_confidence = start_result
-                            start_x, start_y, start_confidence = (
-                                int(start_x),
-                                int(start_y),
-                                float(start_confidence),
-                            )
-                            allure.attach(
-                                f"规则位置: ({start_x}, {start_y}), 置信度: {start_confidence:.3f}, 查找阈值: {found_threshold}",
-                                "查找开始按钮结果",
-                                allure.attachment_type.TEXT,
-                            )
-                            image_matcher.create_marked_screenshot_for_single_template(
-                                start_template,
-                                threshold=found_threshold,
-                            )
-                            attach_screenshot_to_allure(
-                                driver,
-                                "rule_text_found",
-                                "房间内找到了开始按钮",
-                            )
+    #                 with allure.step("验证已经进入房间（未匹配状态）"):
+    #                     image_matcher = create_image_matcher(driver)
+    #                     start_template = TemplatePaths.pkhome.button.start
+    #                     found_threshold = 0.6
+    #                     start_result = image_matcher.find_template_in_screenshot(
+    #                         start_template, threshold=found_threshold
+    #                     )
+    #                     if not start_result:
+    #                         found_threshold = 0.45
+    #                         start_result = image_matcher.find_template_in_screenshot(
+    #                             start_template, threshold=found_threshold
+    #                         )
+    #                         image_matcher.create_marked_screenshot_for_single_template(
+    #                             start_template, threshold=found_threshold
+    #                         )
+    #                         attach_screenshot_to_allure(
+    #                             driver, "start_button_not_found", "房间内没找到开始按钮"
+    #                         )
+    #                         pytest.exit(
+    #                             "开始按钮没有找到，验证失败",
+    #                             returncode=1,
+    #                         )
+    #                     else:
+    #                         start_x, start_y, start_confidence = start_result
+    #                         start_x, start_y, start_confidence = (
+    #                             int(start_x),
+    #                             int(start_y),
+    #                             float(start_confidence),
+    #                         )
+    #                         allure.attach(
+    #                             f"规则位置: ({start_x}, {start_y}), 置信度: {start_confidence:.3f}, 查找阈值: {found_threshold}",
+    #                             "查找开始按钮结果",
+    #                             allure.attachment_type.TEXT,
+    #                         )
+    #                         image_matcher.create_marked_screenshot_for_single_template(
+    #                             start_template,
+    #                             threshold=found_threshold,
+    #                         )
+    #                         attach_screenshot_to_allure(
+    #                             driver,
+    #                             "rule_text_found",
+    #                             "房间内找到了开始按钮",
+    #                         )
 
-            except Exception as e:
-                attach_screenshot_to_allure(
-                    driver,
-                    "signin_dialog_close_button_test_error",
-                    f"点击棋力评测入口失败: {e}",
-                )
-                pytest.exit(f"点击棋力评测入口失败: {e}", returncode=1)
+    #         except Exception as e:
+    #             attach_screenshot_to_allure(
+    #                 driver,
+    #                 "signin_dialog_close_button_test_error",
+    #                 f"点击棋力评测入口失败: {e}",
+    #             )
+    #             pytest.exit(f"点击棋力评测入口失败: {e}", returncode=1)
 
-        with allure.step("点击开始按钮准备匹配对局"):
-            image_matcher = create_image_matcher(driver)
-            try:
-                driver.click(start_x, start_y)
-                time.sleep(1)
+    #     with allure.step("点击开始按钮准备匹配对局"):
+    #         image_matcher = create_image_matcher(driver)
+    #         try:
+    #             driver.click(start_x, start_y)
+    #             time.sleep(1)
 
-                with allure.step("验证点击开始按钮后展示充值弹窗"):
-                    chongzhi_template = TemplatePaths.gift_dialog.text.chongzhi
-                    found_threshold = 0.6
-                    chongzhi_result = image_matcher.find_template_in_screenshot(
-                        chongzhi_template, threshold=found_threshold
-                    )
-                    if not chongzhi_result:
-                        found_threshold = 0.45
-                        chongzhi_result = image_matcher.find_template_in_screenshot(
-                            chongzhi_template, threshold=found_threshold
-                        )
-                        image_matcher.create_marked_screenshot_for_single_template(
-                            chongzhi_template, threshold=found_threshold
-                        )
-                        attach_screenshot_to_allure(
-                            driver,
-                            "chongzhi_text_not_found",
-                            "chongzhi弹窗标题没有找到",
-                        )
-                        pytest.exit("充值弹窗标题没有找到", returncode=1)
-                    else:
-                        x, y, confidence = chongzhi_result
-                        x, y, confidence = int(x), int(y), float(confidence)
-                        allure.attach(
-                            f"充值弹窗标题位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                            "查找充值弹窗标题结果",
-                            allure.attachment_type.TEXT,
-                        )
-                        image_matcher.create_marked_screenshot_for_single_template(
-                            chongzhi_template,
-                            threshold=found_threshold,
-                        )
-                        attach_screenshot_to_allure(
-                            driver,
-                            "chongzhi_text_found",
-                            "找到了充值弹窗",
-                        )
+    #             with allure.step("验证点击开始按钮后展示充值弹窗"):
+    #                 chongzhi_template = TemplatePaths.gift_dialog.text.chongzhi
+    #                 found_threshold = 0.6
+    #                 chongzhi_result = image_matcher.find_template_in_screenshot(
+    #                     chongzhi_template, threshold=found_threshold
+    #                 )
+    #                 if not chongzhi_result:
+    #                     found_threshold = 0.45
+    #                     chongzhi_result = image_matcher.find_template_in_screenshot(
+    #                         chongzhi_template, threshold=found_threshold
+    #                     )
+    #                     image_matcher.create_marked_screenshot_for_single_template(
+    #                         chongzhi_template, threshold=found_threshold
+    #                     )
+    #                     attach_screenshot_to_allure(
+    #                         driver,
+    #                         "chongzhi_text_not_found",
+    #                         "chongzhi弹窗标题没有找到",
+    #                     )
+    #                     pytest.exit("充值弹窗标题没有找到", returncode=1)
+    #                 else:
+    #                     x, y, confidence = chongzhi_result
+    #                     x, y, confidence = int(x), int(y), float(confidence)
+    #                     allure.attach(
+    #                         f"充值弹窗标题位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                         "查找充值弹窗标题结果",
+    #                         allure.attachment_type.TEXT,
+    #                     )
+    #                     image_matcher.create_marked_screenshot_for_single_template(
+    #                         chongzhi_template,
+    #                         threshold=found_threshold,
+    #                     )
+    #                     attach_screenshot_to_allure(
+    #                         driver,
+    #                         "chongzhi_text_found",
+    #                         "找到了充值弹窗",
+    #                     )
 
-            except Exception as e:
-                attach_screenshot_to_allure(
-                    driver, "chongzhi_text_test_error", f"点击开始按钮失败：{e}"
-                )
-                pytest.exit(f"点击按钮没有找到: {e}", returncode=1)
+    #         except Exception as e:
+    #             attach_screenshot_to_allure(
+    #                 driver, "chongzhi_text_test_error", f"点击开始按钮失败：{e}"
+    #             )
+    #             pytest.exit(f"点击按钮没有找到: {e}", returncode=1)
 
-        with allure.step("关闭充值弹窗，展示救济金弹窗"):
-            image_matcher = create_image_matcher(driver)
-            try:
-                close_template = TemplatePaths.gift_dialog.button.chongzhi_close
-                found_threshold = 0.6
-                close_result = image_matcher.find_template_in_screenshot(
-                    close_template, threshold=found_threshold
-                )
-                if not close_result:
-                    found_threshold = 0.45
-                    close_result = image_matcher.find_template_in_screenshot(
-                        close_template, threshold=found_threshold
-                    )
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        close_template, threshold=found_threshold
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "chongzhi_close_button_not_found",
-                        "充值弹窗关闭按钮没有找到",
-                    )
-                    pytest.exit("没有找到关闭按钮", returncode=1)
-                else:
-                    x, y, confidence = close_result
-                    x, y, confidence = int(x), int(y), float(confidence)
-                    allure.attach(
-                        f"充值弹窗关闭按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                        "查找充值弹窗关闭按钮结果",
-                        allure.attachment_type.TEXT,
-                    )
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        close_template, threshold=found_threshold
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "chongzhi_dialog_close_button_found",
-                        "找到了充值弹窗关闭按钮",
-                    )
-                    driver.click(x, y)
-                    time.sleep(1)
+    #     with allure.step("关闭充值弹窗，展示救济金弹窗"):
+    #         image_matcher = create_image_matcher(driver)
+    #         try:
+    #             close_template = TemplatePaths.gift_dialog.button.chongzhi_close
+    #             found_threshold = 0.6
+    #             close_result = image_matcher.find_template_in_screenshot(
+    #                 close_template, threshold=found_threshold
+    #             )
+    #             if not close_result:
+    #                 found_threshold = 0.45
+    #                 close_result = image_matcher.find_template_in_screenshot(
+    #                     close_template, threshold=found_threshold
+    #                 )
+    #                 image_matcher.create_marked_screenshot_for_single_template(
+    #                     close_template, threshold=found_threshold
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "chongzhi_close_button_not_found",
+    #                     "充值弹窗关闭按钮没有找到",
+    #                 )
+    #                 pytest.exit("没有找到关闭按钮", returncode=1)
+    #             else:
+    #                 x, y, confidence = close_result
+    #                 x, y, confidence = int(x), int(y), float(confidence)
+    #                 allure.attach(
+    #                     f"充值弹窗关闭按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                     "查找充值弹窗关闭按钮结果",
+    #                     allure.attachment_type.TEXT,
+    #                 )
+    #                 image_matcher.create_marked_screenshot_for_single_template(
+    #                     close_template, threshold=found_threshold
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "chongzhi_dialog_close_button_found",
+    #                     "找到了充值弹窗关闭按钮",
+    #                 )
+    #                 driver.click(x, y)
+    #                 time.sleep(1)
 
-                    with allure.step("验证是否关闭了充值弹窗"):
-                        jiujijin_template = TemplatePaths.gift_dialog.text.jiujijin
-                        found_threshold = 0.6
-                        jiujijin_result = image_matcher.find_template_in_screenshot(
-                            jiujijin_template, threshold=found_threshold
-                        )
-                        if not jiujijin_result:
-                            found_threshold = 0.45
-                            jiujijin_result = image_matcher.find_template_in_screenshot(
-                                jiujijin_template, threshold=found_threshold
-                            )
-                            image_matcher.create_marked_screenshot_for_single_template(
-                                jiujijin_template, threshold=found_threshold
-                            )
-                            attach_screenshot_to_allure(
-                                driver, "jiujijin_text_not_found", "没有找到救济金文案"
-                            )
-                            pytest.exit("没有找到救济金文案", returncode=1)
+    #                 with allure.step("验证是否关闭了充值弹窗"):
+    #                     jiujijin_template = TemplatePaths.gift_dialog.text.jiujijin
+    #                     found_threshold = 0.6
+    #                     jiujijin_result = image_matcher.find_template_in_screenshot(
+    #                         jiujijin_template, threshold=found_threshold
+    #                     )
+    #                     if not jiujijin_result:
+    #                         found_threshold = 0.45
+    #                         jiujijin_result = image_matcher.find_template_in_screenshot(
+    #                             jiujijin_template, threshold=found_threshold
+    #                         )
+    #                         image_matcher.create_marked_screenshot_for_single_template(
+    #                             jiujijin_template, threshold=found_threshold
+    #                         )
+    #                         attach_screenshot_to_allure(
+    #                             driver, "jiujijin_text_not_found", "没有找到救济金文案"
+    #                         )
+    #                         pytest.exit("没有找到救济金文案", returncode=1)
 
-                        else:
-                            x, y, confidence = jiujijin_result
-                            x, y, confidence = int(x), int(y), float(confidence)
-                            allure.attach(
-                                f"救济金文案位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                                "查找救济金文案标题结果",
-                                allure.attachment_type.TEXT,
-                            )
-                            image_matcher.create_marked_screenshot_for_single_template(
-                                jiujijin_template, threshold=found_threshold
-                            )
-                            attach_screenshot_to_allure(
-                                driver, "jiujijin_text_found", "找到了救济金文案"
-                            )
+    #                     else:
+    #                         x, y, confidence = jiujijin_result
+    #                         x, y, confidence = int(x), int(y), float(confidence)
+    #                         allure.attach(
+    #                             f"救济金文案位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                             "查找救济金文案标题结果",
+    #                             allure.attachment_type.TEXT,
+    #                         )
+    #                         image_matcher.create_marked_screenshot_for_single_template(
+    #                             jiujijin_template, threshold=found_threshold
+    #                         )
+    #                         attach_screenshot_to_allure(
+    #                             driver, "jiujijin_text_found", "找到了救济金文案"
+    #                         )
 
-            except Exception as e:
-                attach_screenshot_to_allure(
-                    driver, "chongzhi_text_test_error", f"点击关闭按钮失败：{e}"
-                )
-                pytest.exit(f"关闭按钮没有找到: {e}", returncode=1)
+    #         except Exception as e:
+    #             attach_screenshot_to_allure(
+    #                 driver, "chongzhi_text_test_error", f"点击关闭按钮失败：{e}"
+    #             )
+    #             pytest.exit(f"关闭按钮没有找到: {e}", returncode=1)
 
-        with allure.step("验证救济金弹窗不展示分享icon"):
-            image_matcher = create_image_matcher(driver)
-            try:
-                share_template = TemplatePaths.gift_dialog.icon.share
-                found_threshold = 0.6
-                share_result = image_matcher.find_template_in_screenshot(
-                    share_template, threshold=found_threshold
-                )
-                if share_result:
-                    x, y, confidence = share_result
-                    x, y, confidence = int(x), int(y), float(confidence)
-                    allure.attach(
-                        f"分享按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
-                        "查找分享按钮结果",
-                        allure.attachment_type.TEXT,
-                    )
-                    image_matcher.create_marked_screenshot_for_single_template(
-                        share_template, threshold=found_threshold
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "share_button_marked",
-                        "分享按钮匹配成功",
-                    )
-                    pytest.exit(
-                        "审核中状态下不应该显示分享按钮，但找到了，验证失败",
-                        returncode=1,
-                    )
-                else:
-                    allure.attach(
-                        f"未找到分享按钮 - 查找阈值: {found_threshold}",
-                        "验证结果：未找到分享按钮（成功）",
-                        allure.attachment_type.TEXT,
-                    )
-                    attach_screenshot_to_allure(
-                        driver,
-                        "share_button_not_found",
-                        "未找到分享按钮（验证成功）",
-                    )
-            except Exception as e:
-                attach_screenshot_to_allure(
-                    driver,
-                    "share_button_test_error",
-                    f"验证分享按钮失败: {e}",
-                )
-                pytest.exit(f"验证分享按钮失败: {e}", returncode=1)
+    #     with allure.step("验证救济金弹窗不展示分享icon"):
+    #         image_matcher = create_image_matcher(driver)
+    #         try:
+    #             share_template = TemplatePaths.gift_dialog.icon.share
+    #             found_threshold = 0.6
+    #             share_result = image_matcher.find_template_in_screenshot(
+    #                 share_template, threshold=found_threshold
+    #             )
+    #             if share_result:
+    #                 x, y, confidence = share_result
+    #                 x, y, confidence = int(x), int(y), float(confidence)
+    #                 allure.attach(
+    #                     f"分享按钮位置: ({x}, {y}), 置信度: {confidence:.3f}, 查找阈值: {found_threshold}",
+    #                     "查找分享按钮结果",
+    #                     allure.attachment_type.TEXT,
+    #                 )
+    #                 image_matcher.create_marked_screenshot_for_single_template(
+    #                     share_template, threshold=found_threshold
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "share_button_marked",
+    #                     "分享按钮匹配成功",
+    #                 )
+    #                 pytest.exit(
+    #                     "审核中状态下不应该显示分享按钮，但找到了，验证失败",
+    #                     returncode=1,
+    #                 )
+    #             else:
+    #                 allure.attach(
+    #                     f"未找到分享按钮 - 查找阈值: {found_threshold}",
+    #                     "验证结果：未找到分享按钮（成功）",
+    #                     allure.attachment_type.TEXT,
+    #                 )
+    #                 attach_screenshot_to_allure(
+    #                     driver,
+    #                     "share_button_not_found",
+    #                     "未找到分享按钮（验证成功）",
+    #                 )
+    #         except Exception as e:
+    #             attach_screenshot_to_allure(
+    #                 driver,
+    #                 "share_button_test_error",
+    #                 f"验证分享按钮失败: {e}",
+    #             )
+    #             pytest.exit(f"验证分享按钮失败: {e}", returncode=1)
